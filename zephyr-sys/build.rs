@@ -113,6 +113,9 @@ fn main() -> anyhow::Result<()> {
         // UART
         .allowlist_item_if("CONFIG_UART_.*", || options.contains("CONFIG_SERIAL"))
         .allowlist_function_if("uart_.*", || options.contains("CONFIG_SERIAL"))
+        // Sensor (added for ODP thermal-service)
+        .allowlist_item_if("SENSOR_.*", || options.contains("CONFIG_SENSOR"))
+        .allowlist_function_if("sensor_.*", || options.contains("CONFIG_SENSOR"))
         // Generate
         .generate()
         .expect("Unable to generate bindings");

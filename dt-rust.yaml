@@ -86,6 +86,19 @@
           - !Reg
       device: "crate::device::flash::FlashPartition"
 
+# The temperature-sensor node.
+- name: temperature-sensor
+  rules:
+    - !Compatible
+      names:
+        - "ti,tmp11x_rs"
+        - "ti,tmp11x"
+      level: 0
+  actions:
+    - !Instance
+      raw: !Myself
+      device: crate::device::temperature_sensor::TemperatureSensor
+
 # Generate a pseudo node that matches all of the labels across the tree with their nodes.
 - name: labels
   rules:
