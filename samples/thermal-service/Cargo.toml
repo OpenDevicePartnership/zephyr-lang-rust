@@ -1,0 +1,30 @@
+# Copyright (c) 2024 Linaro LTD
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+# This must be rustapp for now. This ensure the Zephyr build knows how to link the generated lib.
+name = "rustapp"
+version = "0.1.0"
+edition = "2024"
+description = "ODP Thermal Service"
+license = "Apache-2.0 or MIT"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+embassy-executor = { version = "0.7.0", features = ["task-arena-size-2048"] }
+embassy-futures = "0.1.1"
+embedded-sensors-hal-async = "0.3.0"
+embedded-services = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
+embassy-sync = "0.6.2"
+static_cell = "2.1"
+thermal-service = { git = "https://github.com/OpenDevicePartnership/embedded-services"}
+zephyr = { version = "0.1.0", features = ["time-driver", "executor-zephyr"] }
+log = "0.4.22"
+
+[lints.clippy]
+suspicious = "forbid"
+correctness = "forbid"
+perf = "forbid"
+style = "forbid"

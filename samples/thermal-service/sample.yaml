@@ -1,0 +1,12 @@
+sample:
+  description: ODP Thermal Service
+  name: ODP Thermal Service
+common:
+  harness: console
+  tags: rust
+  filter: CONFIG_RUST_SUPPORTED
+  platform_allow:
+    - nrf52840dk/nrf52840
+tests:
+  sample.rust.helloworld:
+    tags: ODP
