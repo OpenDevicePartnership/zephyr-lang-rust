@@ -115,7 +115,7 @@ impl TemperatureSensor for Tmp11xSensor {
     async fn temperature(&mut self) -> Result<DegreesCelsius, Self::Error> {
         match self.sensor.read_ambient_temperature() {
             Ok(temperature) => {
-                info!("Temperature read out success");
+                info!("Temperature read in Rust");
                 info!("    {}.{} Celsius", temperature.val1, temperature.val2);
                 let temperature: f32 =
                     temperature.val1 as f32 + (temperature.val2 as f32) / 1_000_000.0;
