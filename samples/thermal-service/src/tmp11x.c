@@ -12,7 +12,11 @@
 #include <zephyr/sys/printk.h>
 #include <zephyr/sys/__assert.h>
 
+#ifdef CONFIG_DT_HAS_TI_TMP11X_RS_ENABLED
+#define TMP11X_NODE DT_COMPAT_GET_ANY_STATUS_OKAY(ti_tmp11x_rs)
+#else
 #define TMP11X_NODE DT_COMPAT_GET_ANY_STATUS_OKAY(ti_tmp11x)
+#endif
 
 void tmp11x_read(void *dummy1, void *dummy2, void *dummy3)
 {
