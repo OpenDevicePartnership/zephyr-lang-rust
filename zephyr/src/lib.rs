@@ -74,6 +74,7 @@ pub mod embassy;
 pub mod error;
 pub mod logging;
 pub mod object;
+pub mod sensor;
 #[cfg(CONFIG_RUST_ALLOC)]
 pub mod simpletls;
 pub mod sync;

@@ -80,6 +80,7 @@ fn main() -> Result<()> {
         .allowlist_function("flash_.*")
         .allowlist_function("sensor_.*")
         .allowlist_function("zr_.*")
+        .allowlist_type("sensor_.*")
         .allowlist_item("GPIO_.*")
         .allowlist_item("FLASH_.*")
         .allowlist_item("Z_.*")
