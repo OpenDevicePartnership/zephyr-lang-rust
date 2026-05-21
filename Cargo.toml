@@ -1,0 +1,11 @@
+# Workspace for rust-analyzer support.
+# This is NOT used by the Zephyr build system - it exists solely for IDE tooling.
+
+[workspace]
+members = [
+    "zephyr",
+    "zephyr-sys",
+    "zephyr-macros",
+]
+exclude = ["zephyr-build", "docgen", "samples", "tests"]
+resolver = "2"

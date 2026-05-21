@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: Apache-2.0
+
+config MOCK_TEMP_SENSOR
+	bool "Mock temperature sensor"
+	default y
+	depends on DT_HAS_ZEPHYR_MOCK_TEMP_SENSOR_ENABLED
+	help
+	  Enable mock temperature sensor driver for testing without hardware.

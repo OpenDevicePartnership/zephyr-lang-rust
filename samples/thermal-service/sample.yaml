@@ -6,7 +6,7 @@ common:
   tags: rust
   filter: CONFIG_RUST_SUPPORTED
   platform_allow:
-    - nrf52840dk/nrf52840
+    - qemu_riscv32
 tests:
   sample.rust.helloworld:
     tags: ODP

@@ -1,0 +1,12 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/ {
+	aliases {
+		temperature-sensor = &mock_temp;
+	};
+
+	mock_temp: mock-temp-sensor {
+		compatible = "zephyr,mock-temp-sensor";
+		status = "okay";
+	};
+};

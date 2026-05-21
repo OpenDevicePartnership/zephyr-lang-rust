@@ -59,8 +59,8 @@ async fn init_thermal_service(spawner: Spawner) {
     ts::init().await.unwrap();
     info!("----ODP initialize thermal service");
 
-    let tmp11x_sensor = Tmp11xSensor::new();
-    static SENSOR: OnceLock<ts::sensor::Sensor<Tmp11xSensor, 16>> = OnceLock::new();
+    let sensor_dev = MockTempSensor::new();
+    static SENSOR: OnceLock<ts::sensor::Sensor<MockTempSensor, 16>> = OnceLock::new();
     info!("----Sensor object allocated");
 
     // The sample period is in milliseconds however it does not match the Timer::after_millis implementation in
@@ -72,34 +72,33 @@ async fn init_thermal_service(spawner: Spawner) {
         ..Default::default()
     };
     let sensor = SENSOR
-        .get_or_init(|| ts::sensor::Sensor::new(ts::sensor::DeviceId(0), tmp11x_sensor, profile));
+        .get_or_init(|| ts::sensor::Sensor::new(ts::sensor::DeviceId(0), sensor_dev, profile));
     info!("----Sensor initialized");
 
     ts::register_sensor(sensor.device()).await.unwrap();
     info!("----Sensor registered");
 
-    spawner.must_spawn(tmp11x_sensor_task(sensor));
+    spawner.must_spawn(mock_temp_sensor_task(sensor));
     info!("----Sensor task spawned");
 }
 
-ts::impl_sensor_task!(tmp11x_sensor_task, Tmp11xSensor, 16);
+ts::impl_sensor_task!(mock_temp_sensor_task, MockTempSensor, 16);
 
-// Tmp11xSensor, this is a wrapper around the Zephyr tmp11x temperature sensor
-// and implements the embedded_sensors_hal_async::temperature::TemperatureSensor
-// trait.
+// MockTempSensor wraps the Zephyr temperature sensor device and implements
+// the embedded_sensors_hal_async::temperature::TemperatureSensor trait.
 #[derive(Copy, Clone, Debug)]
-pub struct Tmp11xSensorError;
-impl sensor_embedded::Error for Tmp11xSensorError {
+pub struct MockTempSensorError;
+impl sensor_embedded::Error for MockTempSensorError {
     fn kind(&self) -> sensor_embedded::ErrorKind {
         sensor_embedded::ErrorKind::Other
     }
 }
 
-pub struct Tmp11xSensor {
+pub struct MockTempSensor {
     sensor: ZephyrTemperatureSensor,
 }
 
-impl Tmp11xSensor {
+impl MockTempSensor {
     fn new() -> Self {
         let sensor = zephyr::devicetree::aliases::temperature_sensor::get_instance().unwrap();
 
@@ -107,11 +106,11 @@ impl Tmp11xSensor {
     }
 }
 
-impl sensor_embedded::ErrorType for Tmp11xSensor {
-    type Error = Tmp11xSensorError;
+impl sensor_embedded::ErrorType for MockTempSensor {
+    type Error = MockTempSensorError;
 }
 
-impl TemperatureSensor for Tmp11xSensor {
+impl TemperatureSensor for MockTempSensor {
     async fn temperature(&mut self) -> Result<DegreesCelsius, Self::Error> {
         match self.sensor.read_ambient_temperature() {
             Ok(temperature) => {
@@ -130,7 +129,7 @@ impl TemperatureSensor for Tmp11xSensor {
     }
 }
 
-impl TemperatureThresholdSet for Tmp11xSensor {
+impl TemperatureThresholdSet for MockTempSensor {
     async fn set_temperature_threshold_low(
         &mut self,
         _threshold: DegreesCelsius,
@@ -146,5 +145,5 @@ impl TemperatureThresholdSet for Tmp11xSensor {
     }
 }
 
-impl ts::sensor::CustomRequestHandler for Tmp11xSensor {}
-impl ts::sensor::Controller for Tmp11xSensor {}
+impl ts::sensor::CustomRequestHandler for MockTempSensor {}
+impl ts::sensor::Controller for MockTempSensor {}
