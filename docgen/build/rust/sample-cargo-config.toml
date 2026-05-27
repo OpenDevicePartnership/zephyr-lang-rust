@@ -1,0 +1,24 @@
+
+# This is a generated sample .cargo/config.toml file from the Zephyr build.
+# At the time of generation, this represented the settings needed to allow
+# a `cargo build` command to compile the rust code using the current Zephyr build.
+# If any settings in the Zephyr build change, this could become out of date.
+[build]
+target = "aarch64-unknown-none"
+target-dir = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/docgen/build/rust/target"
+
+[env]
+BUILD_DIR = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/docgen/build"
+DOTCONFIG = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/docgen/build/zephyr/.config"
+ZEPHYR_DTS = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/docgen/build/zephyr/zephyr.dts"
+INCLUDE_DIRS = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/docgen/build/zephyr/include/generated/zephyr;/home/blake/Repos/zephyr/zephyr-rust/zephyr/include;/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/docgen/build/zephyr/include/generated;/home/blake/Repos/zephyr/zephyr-rust/zephyr/soc/native/inf_clock;/home/blake/Repos/zephyr/zephyr-rust/zephyr/boards/native/native_sim;/home/blake/Repos/zephyr/zephyr-rust/zephyr/scripts/native_simulator/common/src/include;/home/blake/Repos/zephyr/zephyr-rust/zephyr/scripts/native_simulator/native/src/include;/home/blake/Repos/zephyr/zephyr-rust/modules/hal/microchip/include;/home/blake/Repos/zephyr/zephyr-rust/modules/hal/st/sensor/inc;/home/blake/Repos/zephyr/zephyr-rust/modules/hal/ti/mspm0/source/ti/devices/msp/.;/home/blake/Repos/zephyr/zephyr-rust/modules/hal/ti/mspm0/source/ti/devices/msp/m0p;/home/blake/Repos/zephyr/zephyr-rust/modules/hal/ti/mspm0/source/ti/devices/msp/peripherals;/home/blake/Repos/zephyr/zephyr-rust/modules/hal/ti/mspm0/source/ti/devices/msp/peripherals/m0p;/home/blake/Repos/zephyr/zephyr-rust/modules/hal/ti/mspm0/source/ti/devices/msp/peripherals/m0p/sysctl;"
+INCLUDE_DEFINES = "KERNEL;__ZEPHYR__=1;K_HEAP_MEM_POOL_SIZE=0"
+WRAPPER_FILE = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/docgen/build/rust/wrapper.c"
+BINARY_DIR_INCLUDE_GENERATED = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/docgen/build/zephyr/include/generated/zephyr"
+DT_AUGMENTS = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/dt-rust.yaml"
+
+[patch.crates-io]
+zephyr.path = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/zephyr"
+zephyr-build.path = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/zephyr-build"
+zephyr-sys.path = "/home/blake/Repos/zephyr/zephyr-rust/modules/lang/rust/zephyr-sys"
+
