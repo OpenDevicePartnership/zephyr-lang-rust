@@ -15,11 +15,14 @@ crate-type = ["staticlib"]
 [dependencies]
 embassy-executor = { version = "0.7.0", features = ["task-arena-size-2048"] }
 embassy-futures = "0.1.1"
+embassy-sync = "0.6.2"
+embassy-time = { version = "0.5", features = ["tick-hz-10_000"] } # u_Note: tick-hz-10_000 is needed to match with zephyr. If this isn't here, something like Timer::after_secs(1) would actually wait for 100 seconds instead of 1 seconds. There should probably be some kind of way to do this manually so the embassy APIs work no matter what the Zephyr tick rate is.
 embedded-sensors-hal-async = "0.3.0"
 embedded-services = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
-embassy-sync = "0.6.2"
+odp-service-common = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
 static_cell = "2.1"
-thermal-service = { git = "https://github.com/OpenDevicePartnership/embedded-services"}
+thermal-service = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
+thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
 zephyr = { version = "0.1.0", features = ["time-driver", "executor-zephyr"] }
 log = "0.4.22"
 

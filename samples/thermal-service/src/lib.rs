@@ -5,18 +5,20 @@
 
 use core::ffi::c_int;
 use embassy_executor::Spawner;
-use embassy_sync::once_lock::OnceLock;
+use embassy_time::{Duration, Timer};
 use embedded_sensors_hal_async::sensor as sensor_embedded;
 use embedded_sensors_hal_async::temperature::{
     DegreesCelsius, TemperatureSensor, TemperatureThresholdSet,
 };
 use log::info;
+use odp_service_common::runnable_service::{Service as RunnableService, ServiceRunner};
 use static_cell::StaticCell;
+use thermal_service as ts;
+use thermal_service_interface::sensor as ts_sensor_interface;
+use thermal_service_interface::sensor::SensorService;
 use zephyr::device::temperature_sensor::TemperatureSensor as ZephyrTemperatureSensor;
 use zephyr::embassy::Executor;
 use zephyr::raw;
-
-use thermal_service as ts;
 
 // The main thread priority.
 const MAIN_PRIO: c_int = 2;
@@ -54,35 +56,81 @@ async fn main_task(spawner: Spawner) {
     init_thermal_service(spawner).await;
 }
 
-async fn init_thermal_service(spawner: Spawner) {
-    info!(" Start thermal service");
-    ts::init().await.unwrap();
-    info!("----ODP initialize thermal service");
+// Event sender that does nothing (placeholder for real event handling)
+struct NoOpEventSender;
 
-    let tmp11x_sensor = Tmp11xSensor::new();
-    static SENSOR: OnceLock<ts::sensor::Sensor<Tmp11xSensor, 16>> = OnceLock::new();
-    info!("----Sensor object allocated");
+impl embedded_services::event::Sender<ts_sensor_interface::Event> for NoOpEventSender {
+    async fn send(&mut self, _event: ts_sensor_interface::Event) {
+        // No-op for this simple demo
+    }
 
-    // The sample period is in milliseconds however it does not match the Timer::after_millis implementation in
-    // Zephyr. The value 20 is equivalent to 2000ms in Zephyr.
-    // TODO: Investigate the discrepancy between the two values.
-    let profile = ts::sensor::Profile {
-        sample_period: 20,
-        fast_sample_period: 20,
-        ..Default::default()
-    };
-    let sensor = SENSOR
-        .get_or_init(|| ts::sensor::Sensor::new(ts::sensor::DeviceId(0), tmp11x_sensor, profile));
-    info!("----Sensor initialized");
-
-    ts::register_sensor(sensor.device()).await.unwrap();
-    info!("----Sensor registered");
-
-    spawner.must_spawn(tmp11x_sensor_task(sensor));
-    info!("----Sensor task spawned");
+    fn try_send(&mut self, _event: ts_sensor_interface::Event) -> Option<()> {
+        Some(())
+    }
 }
 
-ts::impl_sensor_task!(tmp11x_sensor_task, Tmp11xSensor, 16);
+async fn init_thermal_service(spawner: Spawner) {
+    info!(" Start thermal service");
+
+    let tmp11x_driver = Tmp11xSensor::new();
+    info!("----Sensor driver created");
+
+    // Configuration for the sensor service
+    let config = ts::sensor::Config {
+        sample_period: Duration::from_secs(2),
+        fast_sample_period: Duration::from_secs(2),
+        ..Default::default()
+    };
+
+    // Static storage for the sensor service resources
+    static SENSOR_RESOURCES: StaticCell<ts::sensor::Resources<Tmp11xSensor, 16>> = StaticCell::new();
+    let sensor_resources = SENSOR_RESOURCES.init(ts::sensor::Resources::default());
+
+    // Static storage for event senders
+    static EVENT_SENDERS: StaticCell<[NoOpEventSender; 1]> = StaticCell::new();
+    let event_senders = EVENT_SENDERS.init([NoOpEventSender]);
+
+    let init_params = ts::sensor::InitParams {
+        driver: tmp11x_driver,
+        config,
+        event_senders: event_senders.as_mut_slice(),
+    };
+
+    // Initialize sensor service
+    let (sensor_service, sensor_runner) = ts::sensor::Service::<Tmp11xSensor, NoOpEventSender, 16>::new(
+        sensor_resources,
+        init_params,
+    )
+    .await
+    .expect("Failed to initialize sensor service");
+
+    info!("----Sensor service initialized");
+
+    // Spawn the sensor runner task
+    spawner.must_spawn(sensor_runner_task(sensor_runner));
+    info!("----Sensor task spawned");
+
+    spawner.spawn(heartbeat()).expect("ERROR: Failed to spawn task 'hearbeat()'.");
+
+    // Use the sensor service to read temperature
+    let temp = sensor_service.temperature().await;
+    info!("----Initial temperature: {} C", temp);
+}
+
+#[embassy_executor::task]
+async fn sensor_runner_task(
+    runner: ts::sensor::Runner<'static, Tmp11xSensor, NoOpEventSender, 16>,
+) {
+    runner.run().await;
+}
+
+#[embassy_executor::task]
+async fn heartbeat() {
+    loop {
+        info!("heartbeat");
+        Timer::after_secs(1).await;
+    }
+}
 
 // Tmp11xSensor, this is a wrapper around the Zephyr tmp11x temperature sensor
 // and implements the embedded_sensors_hal_async::temperature::TemperatureSensor
@@ -146,5 +194,5 @@ impl TemperatureThresholdSet for Tmp11xSensor {
     }
 }
 
-impl ts::sensor::CustomRequestHandler for Tmp11xSensor {}
-impl ts::sensor::Controller for Tmp11xSensor {}
+// Implement the Driver trait (marker trait requiring TemperatureSensor)
+impl ts_sensor_interface::Driver for Tmp11xSensor {}
