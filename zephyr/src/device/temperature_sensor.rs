@@ -5,7 +5,7 @@ use super::{NoStatic, Unique};
 use crate::raw;
  use log::info;
 
-/// A flash controller
+/// A temperature sensor.
 ///
 /// This is a wrapper around the `struct device` in Zephyr that represents a temperature sensor.
 #[allow(dead_code)]
@@ -66,4 +66,3 @@ impl TemperatureSensor {
 
     }
 }
-

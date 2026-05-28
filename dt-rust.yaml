@@ -99,6 +99,22 @@
       raw: !Myself
       device: crate::device::temperature_sensor::TemperatureSensor
 
+# Node for 'Fan' from fan.rs
+- name: pwm-fan
+  rules:
+    - !Compatible
+      names: ["pwm-fan"]
+      level: 0
+  actions:
+    - !Instance
+      raw: !Phandle pwms
+      device: crate::device::fan::Fan
+      properties:
+        - name: max-rpm
+          type: Int
+        - name: label
+          type: String
+
 # Generate a pseudo node that matches all of the labels across the tree with their nodes.
 - name: labels
   rules:

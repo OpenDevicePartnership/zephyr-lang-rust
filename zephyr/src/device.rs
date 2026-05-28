@@ -15,6 +15,7 @@ pub mod flash;
 #[cfg(CONFIG_GPIO)]
 pub mod gpio;
 pub mod temperature_sensor;
+pub mod fan; // u_Note: Should probably add the #cfg(...) stuff for both temperature_sensor and fan eventually?
 
 // Allow dead code, because it isn't required for a given build to have any devices.
 /// Device uniqueness.

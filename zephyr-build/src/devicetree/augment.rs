@@ -21,6 +21,27 @@ use crate::devicetree::{output::dt_to_lower_id, Word};
 
 use super::{DeviceTree, Node};
 
+/// Types of devicetree properties that can be extracted.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum PropertyType {
+    /// A single integer value (e.g., `max-rpm = <5000>;`)
+    Int,
+    /// A string value (e.g., `label = "CPU Fan";`)
+    String,
+    /// An array of integers (e.g., `curve = <20 40 60 80>;`)
+    IntArray,
+}
+
+/// A devicetree property to extract and pass to the constructor.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PropertyArg {
+    /// The devicetree property name (e.g., "max-rpm").
+    pub name: String,
+    /// The type of the property.
+    #[serde(rename = "type")]
+    pub prop_type: PropertyType,
+}
+
 /// This action is given to each node in the device tree, and it is given a chance to return
 /// additional code to be included in the module associated with that entry.  These are all
 /// assembled together and included in the final generated devicetree.rs.
@@ -140,6 +161,9 @@ pub enum Action {
         device: String,
         /// Full path to a type if this node needs a static associated with each instance.
         static_type: Option<String>,
+        /// Optional list of devicetree properties to extract and pass to the constructor.
+        #[serde(default)]
+        properties: Option<Vec<PropertyArg>>,
     },
     /// Generate all of the labels as its own node.
     Labels,
@@ -158,7 +182,8 @@ impl Action {
                 raw,
                 device,
                 static_type,
-            } => raw.generate(node, device, static_type.as_deref(), cfg_attr),
+                properties,
+            } => raw.generate(node, device, static_type.as_deref(), properties.as_deref(), cfg_attr),
             Action::Labels => {
                 let nodes = tree.labels.iter().map(|(k, v)| {
                     let name = dt_to_lower_id(k);
@@ -205,10 +230,36 @@ impl RawInfo {
         node: &Node,
         device: &str,
         static_type: Option<&str>,
+        properties: Option<&[PropertyArg]>,
         cfg_attr: &Option<TokenStream>,
     ) -> TokenStream {
         let device_id = str_to_path(device);
         let static_type = str_to_path(static_type.unwrap_or("crate::device::NoStatic"));
+
+        // Extract property values from the devicetree node.
+        let prop_args: Vec<TokenStream> = properties
+            .unwrap_or(&[])
+            .iter()
+            .map(|p| {
+                match p.prop_type {
+                    PropertyType::Int => {
+                        let val = node.get_number(&p.name)
+                            .unwrap_or_else(|| panic!("Property '{}' not found or not an int", p.name));
+                        quote! { #val }
+                    }
+                    PropertyType::String => {
+                        let val = node.get_single_string(&p.name)
+                            .unwrap_or_else(|| panic!("Property '{}' not found or not a string", p.name));
+                        quote! { #val }
+                    }
+                    PropertyType::IntArray => {
+                        let vals = node.get_numbers(&p.name)
+                            .unwrap_or_else(|| panic!("Property '{}' not found or not an int array", p.name));
+                        quote! { &[#(#vals),*] }
+                    }
+                }
+            })
+            .collect();
         match self {
             Self::Myself => {
                 let ord = node.ord;
@@ -235,7 +286,7 @@ impl RawInfo {
                             pub fn get_instance() -> Option<#device_id> {
                                 unsafe {
                                     let device = get_instance_raw();
-                                    #device_id::new(&UNIQUE, &STATIC, device)
+                                    #device_id::new(&UNIQUE, &STATIC, device #(, #prop_args)*)
                                 }
                             }
                         }
@@ -271,7 +322,7 @@ impl RawInfo {
                         unsafe {
                             let device = #target_route :: get_instance_raw();
                             let device_static = #target_route :: get_static_raw();
-                            #device_id::new(&UNIQUE, &STATIC, device, device_static, #(#args),*)
+                            #device_id::new(&UNIQUE, &STATIC, device, device_static, #(#args),* #(, #prop_args)*)
                         }
                     }
                 }
@@ -294,7 +345,7 @@ impl RawInfo {
                     pub fn get_instance() -> Option<#device_id> {
                         unsafe {
                             let device = #path :: get_instance_raw();
-                            #device_id::new(&UNIQUE, &STATIC, device, #(#get_args),*)
+                            #device_id::new(&UNIQUE, &STATIC, device, #(#get_args),* #(, #prop_args)*)
                         }
                     }
                 }
