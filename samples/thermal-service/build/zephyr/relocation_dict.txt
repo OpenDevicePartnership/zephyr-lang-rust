@@ -1,0 +1,2 @@
+
+RAM:COPY:/home/blake/Repos/zephyr/zephyr-rust/zephyr/soc/nxp/imxrt/imxrt6xx/cm33/flash_clock_setup.c,

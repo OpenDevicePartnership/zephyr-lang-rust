@@ -1,0 +1,31 @@
+empty_file.o: \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/misc/empty_file.c \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/dts/arm/nxp/imxrt/nxp_rt6xx.dtsi \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/dts/common/mem.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/dts/common/freq.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/dts/arm/armv8-m.dtsi \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/dts/common/skeleton.dtsi \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/adc/adc.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/dt-util.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/sys/util_macro.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/sys/util_internal.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/sys/util_loops.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/sys/util_listify.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/sys/util_internal_is_eq.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/sys/util_internal_util_inc.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/sys/util_internal_util_dec.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/sys/util_internal_util_x2.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/clock/mcux_lpc_syscon_clock.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/gpio/gpio.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/i2c/i2c.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/memory-attr/memory-attr-arm.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/memory-attr/memory-attr.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/reset/nxp_syscon_reset_common.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/misc/nxp_rtxxx_dsp_ctrl.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/pwm/pwm.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/gpio/arduino-header-r3.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/include/zephyr/dt-bindings/input/input-event-codes.h \
+ /home/blake/Repos/zephyr/zephyr-rust/zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi \
+ /home/blake/Repos/zephyr/zephyr-rust/modules/hal/nxp/dts/nxp/nxp_imx/rt/MIMXRT685SFVKB-pinctrl.h

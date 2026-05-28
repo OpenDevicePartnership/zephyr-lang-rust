@@ -1,0 +1,5 @@
+west:
+  command: /home/blake/Repos/zephyr/.venv/bin/west build -b mimxrt685_evk/mimxrt685s/cm33
+    --pristine
+  topdir: /home/blake/Repos/zephyr/zephyr-rust
+  version: 1.5.0

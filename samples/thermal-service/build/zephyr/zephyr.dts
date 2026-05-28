@@ -1,0 +1,1324 @@
+/dts-v1/;
+
+/* node '/' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx.dtsi:9 */
+/ {
+	#address-cells = < 0x1 >;          /* in zephyr/dts/common/skeleton.dtsi:10 */
+	#size-cells = < 0x1 >;             /* in zephyr/dts/common/skeleton.dtsi:11 */
+	model = "NXP MIMXRT685-EVK board"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:17 */
+	compatible = "nxp,mimxrt685";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:18 */
+
+	/* node '/soc' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx.dtsi:10 */
+	soc {
+		#address-cells = < 0x1 >;     /* in zephyr/dts/arm/armv8-m.dtsi:7 */
+		#size-cells = < 0x1 >;        /* in zephyr/dts/arm/armv8-m.dtsi:8 */
+		compatible = "simple-bus";    /* in zephyr/dts/arm/armv8-m.dtsi:9 */
+		interrupt-parent = < &nvic >; /* in zephyr/dts/arm/armv8-m.dtsi:10 */
+		ranges;                       /* in zephyr/dts/arm/armv8-m.dtsi:11 */
+
+		/* node '/soc/sram@30000000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx.dtsi:11 */
+		sram: sram@30000000 {
+			ranges = < 0x20000000 0x30000000 0x500000 0x0 0x10000000 0x500000 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx.dtsi:12 */
+			#address-cells = < 0x1 >;                                            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:83 */
+			#size-cells = < 0x1 >;                                               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:84 */
+
+			/* node '/soc/sram@30000000/memory@1b000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:95 */
+			sram_code: memory@1b000 {
+				compatible = "mmio-sram";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:96 */
+				reg = < 0x1b000 0x165000 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:97 */
+			};
+
+			/* node '/soc/sram@30000000/memory@180000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:100 */
+			sram0: memory@180000 {
+				compatible = "mmio-sram";    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:101 */
+				reg = < 0x180000 0x300000 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:102 */
+			};
+
+			/* node '/soc/sram@30000000/memory@40140000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:105 */
+			sram1: memory@40140000 {
+				compatible = "zephyr,memory-region",
+				             "mmio-sram";            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:106 */
+				reg = < 0x40140000 0x4000 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:107 */
+				zephyr,memory-region = "SRAM1";      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:108 */
+				zephyr,memory-attr = < 0x100000 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:109 */
+				status = "okay";                     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:443 */
+			};
+		};
+
+		/* node '/soc/peripheral@50000000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx.dtsi:16 */
+		peripheral: peripheral@50000000 {
+			ranges = < 0x0 0x50000000 0x10000000 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx.dtsi:17 */
+			#address-cells = < 0x1 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:122 */
+			#size-cells = < 0x1 >;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:123 */
+
+			/* node '/soc/peripheral@50000000/spi@134000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:132 */
+			flexspi: spi@134000 {
+				reg = < 0x134000 0x1000 >,
+				      < 0x18000000 0x8000000 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:133 */
+				reg-names = "reg_base",
+				            "ahb";               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:134 */
+				compatible = "nxp,imx-flexspi";  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:665 */
+				interrupts = < 0x2a 0x0 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:666 */
+				#address-cells = < 0x1 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:667 */
+				#size-cells = < 0x0 >;           /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:668 */
+				clocks = < &clkctl1 0x2400 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:670 */
+				pinctrl-0 = < &pinmux_flexspi >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:267 */
+				pinctrl-names = "default";       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:268 */
+				status = "okay";                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:269 */
+
+				/* node '/soc/peripheral@50000000/spi@134000/flash-controller@2' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:271 */
+				ext_flash_ctrl: flash-controller@2 {
+					compatible = "nxp,imx-flexspi-mx25um51345g"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:272 */
+					size = < 0x20000000 >;                       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:274 */
+					reg = < 0x2 >;                               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:275 */
+					spi-max-frequency = < 0x7270e00 >;           /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:276 */
+					status = "okay";                             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:277 */
+					jedec-id = [ C2 81 3A ];                     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:278 */
+					#address-cells = < 0x1 >;                    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:280 */
+					#size-cells = < 0x1 >;                       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:281 */
+					ranges = < 0x0 0x18000000 0x4000000 >;       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:282 */
+
+					/* node '/soc/peripheral@50000000/spi@134000/flash-controller@2/flash@0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:284 */
+					mx25um51345g: flash@0 {
+						compatible = "soc-nv-flash";   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:285 */
+						reg = < 0x0 0x4000000 >;       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:286 */
+						erase-block-size = < 0x1000 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:287 */
+						write-block-size = < 0x1 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:288 */
+
+						/* node '/soc/peripheral@50000000/spi@134000/flash-controller@2/flash@0/partitions' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:290 */
+						partitions {
+							compatible = "fixed-partitions"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:291 */
+							#address-cells = < 0x1 >;        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:292 */
+							#size-cells = < 0x1 >;           /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:293 */
+
+							/* node '/soc/peripheral@50000000/spi@134000/flash-controller@2/flash@0/partitions/partition@0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:299 */
+							boot_partition: partition@0 {
+								label = "mcuboot";     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:300 */
+								reg = < 0x0 0x20000 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:301 */
+							};
+
+							/* node '/soc/peripheral@50000000/spi@134000/flash-controller@2/flash@0/partitions/partition@20000' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:304 */
+							slot0_partition: partition@20000 {
+								label = "image-0";          /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:305 */
+								reg = < 0x20000 0x300000 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:306 */
+							};
+
+							/* node '/soc/peripheral@50000000/spi@134000/flash-controller@2/flash@0/partitions/partition@320000' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:309 */
+							slot1_partition: partition@320000 {
+								label = "image-1";           /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:310 */
+								reg = < 0x320000 0x300000 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:311 */
+							};
+
+							/* node '/soc/peripheral@50000000/spi@134000/flash-controller@2/flash@0/partitions/partition@620000' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:314 */
+							storage_partition: partition@620000 {
+								label = "storage";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:315 */
+								reg = < 0x620000 0x39e0000 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:316 */
+							};
+						};
+					};
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/clkctl@1000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:137 */
+			clkctl0: clkctl@1000 {
+				compatible = "nxp,lpc-syscon"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:139 */
+				reg = < 0x1000 0x1000 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:140 */
+				#clock-cells = < 0x1 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:141 */
+				phandle = < 0xf >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:388 */
+			};
+
+			/* node '/soc/peripheral@50000000/sysctl@2000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:148 */
+			sysctl0: sysctl@2000 {
+				reg = < 0x2000 0x2000 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:149 */
+				compatible = "nxp,rt6xx-sysctl"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:150 */
+				phandle = < 0x18 >;              /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:61 */
+			};
+
+			/* node '/soc/peripheral@50000000/iocon@4000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:153 */
+			iocon: iocon@4000 {
+				compatible = "nxp,lpc-iocon"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:154 */
+				reg = < 0x4000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:155 */
+
+				/* node '/soc/peripheral@50000000/iocon@4000/pinctrl' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:157 */
+				pinctrl: pinctrl {
+					compatible = "nxp,rt-iocon-pinctrl"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:158 */
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm0_usart' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:12 */
+					pinmux_flexcomm0_usart: pinmux_flexcomm0_usart {
+						phandle = < 0x5 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:158 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm0_usart/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:13 */
+						group0 {
+							pinmux = < 0x200001 >;     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:14 */
+							input-enable;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:15 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:16 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:17 */
+						};
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm0_usart/group1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:20 */
+						group1 {
+							pinmux = < 0x100001 >;     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:21 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:22 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:23 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm1_i2s' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:27 */
+					pinmux_flexcomm1_i2s: pinmux_flexcomm1_i2s {
+						phandle = < 0x7 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:217 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm1_i2s/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:28 */
+						group0 {
+							pinmux = < 0x900001 >,
+							         < 0x800001 >,
+							         < 0x700001 >;   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:29 */
+							input-enable;            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:32 */
+							slew-rate = "normal";    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:33 */
+							drive-strength = "high"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:34 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm2_i2c' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:38 */
+					pinmux_flexcomm2_i2c: pinmux_flexcomm2_i2c {
+						phandle = < 0x8 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:167 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm2_i2c/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:39 */
+						group0 {
+							pinmux = < 0x1100001 >,
+							         < 0x1200001 >;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:40 */
+							bias-pull-up;            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:42 */
+							input-enable;            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:43 */
+							slew-rate = "normal";    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:44 */
+							drive-strength = "high"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:45 */
+							drive-open-drain;        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:46 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm3_i2s' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:50 */
+					pinmux_flexcomm3_i2s: pinmux_flexcomm3_i2s {
+						phandle = < 0xa >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:229 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm3_i2s/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:51 */
+						group0 {
+							pinmux = < 0x1700001 >,
+							         < 0x1600001 >,
+							         < 0x1500001 >,
+							         < 0x2a00001 >;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:52 */
+							input-enable;            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:56 */
+							slew-rate = "normal";    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:57 */
+							drive-strength = "high"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:58 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm4_usart' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:62 */
+					pinmux_flexcomm4_usart: pinmux_flexcomm4_usart {
+						phandle = < 0xb >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:192 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm4_usart/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:63 */
+						group0 {
+							pinmux = < 0x1e00001 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:64 */
+							input-enable;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:65 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:66 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:67 */
+						};
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm4_usart/group1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:70 */
+						group1 {
+							pinmux = < 0x1d00001 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:71 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:72 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:73 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm5_spi' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:77 */
+					pinmux_flexcomm5_spi: pinmux_flexcomm5_spi {
+						phandle = < 0xc >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:205 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexcomm5_spi/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:78 */
+						group0 {
+							pinmux = < 0x2300001 >,
+							         < 0x2400001 >,
+							         < 0x2500001 >,
+							         < 0x2600001 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:79 */
+							input-enable;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:83 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:84 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:85 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_dmic0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:89 */
+					pinmux_dmic0: pinmux_dmic0 {
+						phandle = < 0x10 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:452 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_dmic0/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:90 */
+						group0 {
+							pinmux = < 0x5500001 >,
+							         < 0x5400001 >,
+							         < 0x5000001 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:91 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:93 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:94 */
+							input-enable;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:95 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexspi' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:99 */
+					pinmux_flexspi: pinmux_flexspi {
+						phandle = < 0x3 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:267 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexspi/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:100 */
+						group0 {
+							pinmux = < 0x2b00006 >,
+							         < 0x2c00006 >,
+							         < 0x2d00006 >,
+							         < 0x2e00006 >,
+							         < 0x3d00005 >,
+							         < 0x5100006 >,
+							         < 0x5200006 >,
+							         < 0x5300006 >,
+							         < 0x5600006 >,
+							         < 0x5700006 >;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:101 */
+							input-enable;            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:111 */
+							slew-rate = "normal";    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:112 */
+							drive-strength = "high"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:113 */
+						};
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_flexspi/group1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:116 */
+						group1 {
+							pinmux = < 0x4c00000 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:117 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:118 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:119 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_lpadc0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:164 */
+					pinmux_lpadc0: pinmux_lpadc0 {
+						phandle = < 0x14 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:388 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_lpadc0/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:165 */
+						group0 {
+							pinmux = < 0x500000 >,
+							         < 0x600000 >;     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:166 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:168 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:169 */
+							nxp,analog-mode;           /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:170 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_pmic_i2c' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:174 */
+					pinmux_pmic_i2c: pinmux_pmic_i2c {
+						phandle = < 0xd >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:240 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_pmic_i2c/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:175 */
+						group0 {
+							pinmux = < 0x10000000 >,
+							         < 0x10100000 >;   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:176 */
+							bias-pull-up;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:178 */
+							input-enable;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:179 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:180 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:181 */
+							drive-open-drain;          /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:182 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_sctimer' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:186 */
+					pinmux_sctimer: pinmux_sctimer {
+						phandle = < 0x11 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:365 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_sctimer/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:187 */
+						group0 {
+							pinmux = < 0x1b00003 >,
+							         < 0xe00003 >,
+							         < 0x1a00003 >,
+							         < 0x1f00003 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:188 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:192 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:193 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_usdhc' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:197 */
+					pinmux_usdhc: pinmux_usdhc {
+						phandle = < 0x13 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:382 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_usdhc/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:198 */
+						group0 {
+							pinmux = < 0x3f00001 >,
+							         < 0x4000001 >,
+							         < 0x4100001 >,
+							         < 0x4200001 >,
+							         < 0x4300001 >,
+							         < 0x4900000 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:199 */
+							bias-pull-up;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:205 */
+							input-enable;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:206 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:207 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:208 */
+						};
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_usdhc/group1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:211 */
+						group1 {
+							pinmux = < 0x3e00001 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:212 */
+							input-enable;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:213 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:214 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:215 */
+						};
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_usdhc/group2' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:218 */
+						group2 {
+							pinmux = < 0x4a00000 >,
+							         < 0x4400000 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:219 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:221 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:222 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_i3c' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:226 */
+					pinmux_i3c: pinmux_i3c {
+						phandle = < 0x15 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:425 */
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_i3c/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:227 */
+						group0 {
+							pinmux = < 0x5d00001 >,
+							         < 0x5e00001 >;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:228 */
+							input-enable;            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:230 */
+							slew-rate = "slow";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:231 */
+							drive-strength = "high"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:232 */
+						};
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_i3c/group1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:235 */
+						group1 {
+							pinmux = < 0x5f00001 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:236 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:237 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:238 */
+						};
+					};
+
+					/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_ctimer2_pwm' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:242 */
+					pinmux_ctimer2_pwm: pinmux_ctimer2_pwm {
+
+						/* node '/soc/peripheral@50000000/iocon@4000/pinctrl/pinmux_ctimer2_pwm/group0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:243 */
+						group0 {
+							pinmux = < 0xe00004 >;     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:244 */
+							slew-rate = "normal";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:245 */
+							drive-strength = "normal"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk-pinctrl.dtsi:246 */
+						};
+					};
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/clkctl@21000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:162 */
+			clkctl1: clkctl@21000 {
+				compatible = "nxp,lpc-syscon"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:164 */
+				reg = < 0x21000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:165 */
+				#clock-cells = < 0x1 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:166 */
+				phandle = < 0x2 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:670 */
+			};
+
+			/* node '/soc/peripheral@50000000/reset@0' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:169 */
+			rstctl0: reset@0 {
+				compatible = "nxp,rstctl"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:170 */
+				reg = < 0x0 0x80 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:171 */
+				#reset-cells = < 0x1 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:172 */
+			};
+
+			/* node '/soc/peripheral@50000000/reset@20000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:175 */
+			rstctl1: reset@20000 {
+				compatible = "nxp,rstctl"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:176 */
+				reg = < 0x20000 0x80 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:177 */
+				#reset-cells = < 0x1 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:178 */
+				phandle = < 0x4 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:254 */
+			};
+
+			/* node '/soc/peripheral@50000000/uuid@2f50' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:181 */
+			uuid: uuid@2f50 {
+				compatible = "nxp,lpc-uid"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:182 */
+				reg = < 0x2f50 0x10 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:183 */
+			};
+
+			/* node '/soc/peripheral@50000000/gpio@100000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:186 */
+			gpio: gpio@100000 {
+				compatible = "nxp,lpc-gpio"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:187 */
+				reg = < 0x100000 0x2784 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:188 */
+				#address-cells = < 0x1 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:189 */
+				#size-cells = < 0x0 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:190 */
+
+				/* node '/soc/peripheral@50000000/gpio@100000/gpio@0' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:192 */
+				gpio0: gpio@0 {
+					compatible = "nxp,lpc-gpio-port"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:193 */
+					int-source = "pint";              /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:194 */
+					gpio-controller;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:195 */
+					#gpio-cells = < 0x2 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:196 */
+					reg = < 0x0 >;                    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:197 */
+					status = "okay";                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:324 */
+					phandle = < 0x19 >;               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:64 */
+				};
+
+				/* node '/soc/peripheral@50000000/gpio@100000/gpio@1' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:200 */
+				gpio1: gpio@1 {
+					compatible = "nxp,lpc-gpio-port"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:201 */
+					int-source = "pint";              /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:202 */
+					gpio-controller;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:203 */
+					#gpio-cells = < 0x2 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:204 */
+					reg = < 0x1 >;                    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:205 */
+					status = "okay";                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:328 */
+					phandle = < 0x9 >;                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:176 */
+				};
+
+				/* node '/soc/peripheral@50000000/gpio@100000/gpio@2' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:208 */
+				gpio2: gpio@2 {
+					compatible = "nxp,lpc-gpio-port"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:209 */
+					gpio-controller;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:210 */
+					#gpio-cells = < 0x2 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:211 */
+					reg = < 0x2 >;                    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:212 */
+					status = "okay";                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:332 */
+					phandle = < 0x12 >;               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:373 */
+				};
+
+				/* node '/soc/peripheral@50000000/gpio@100000/gpio@3' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:215 */
+				gpio3: gpio@3 {
+					compatible = "nxp,lpc-gpio-port"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:216 */
+					gpio-controller;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:217 */
+					#gpio-cells = < 0x2 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:218 */
+					reg = < 0x3 >;                    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:219 */
+				};
+
+				/* node '/soc/peripheral@50000000/gpio@100000/gpio@4' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:222 */
+				gpio4: gpio@4 {
+					compatible = "nxp,lpc-gpio-port"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:223 */
+					gpio-controller;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:224 */
+					#gpio-cells = < 0x2 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:225 */
+					reg = < 0x4 >;                    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:226 */
+				};
+
+				/* node '/soc/peripheral@50000000/gpio@100000/gpio@7' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:229 */
+				gpio7: gpio@7 {
+					compatible = "nxp,lpc-gpio-port"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:230 */
+					gpio-controller;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:231 */
+					#gpio-cells = < 0x2 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:232 */
+					reg = < 0x7 >;                    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:233 */
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/pint@25000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:237 */
+			pint: pint@25000 {
+				compatible = "nxp,pint";    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:238 */
+				reg = < 0x25000 0x1000 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:239 */
+				interrupt-controller;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:240 */
+				#interrupt-cells = < 0x1 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:241 */
+				#address-cells = < 0x0 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:242 */
+				interrupts = < 0x4 0x2 >,
+				             < 0x5 0x2 >,
+				             < 0x6 0x2 >,
+				             < 0x7 0x2 >,
+				             < 0x23 0x2 >,
+				             < 0x24 0x2 >,
+				             < 0x25 0x2 >,
+				             < 0x26 0x2 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:243 */
+				num-lines = < 0x8 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:245 */
+				num-inputs = < 0x40 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:246 */
+			};
+
+			/* node '/soc/peripheral@50000000/flexcomm@106000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:249 */
+			flexcomm0: flexcomm@106000 {
+				reg = < 0x106000 0x1000 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:251 */
+				interrupts = < 0xe 0x0 >;                /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:252 */
+				clocks = < &clkctl1 0x100 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:253 */
+				resets = < &rstctl1 0x8 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:254 */
+				compatible = "nxp,lpc-usart";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:155 */
+				status = "okay";                         /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:156 */
+				current-speed = < 0x1c200 >;             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:157 */
+				pinctrl-0 = < &pinmux_flexcomm0_usart >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:158 */
+				pinctrl-names = "default";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:159 */
+				dmas = < &dma0 0x0 >,
+				       < &dma0 0x1 >;                    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:160 */
+				dma-names = "rx",
+				            "tx";                        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:161 */
+			};
+
+			/* node '/soc/peripheral@50000000/flexcomm@107000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:258 */
+			flexcomm1: i2s0: flexcomm@107000 {
+				reg = < 0x107000 0x1000 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:260 */
+				interrupts = < 0xf 0x0 >;              /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:261 */
+				clocks = < &clkctl1 0x101 >;           /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:262 */
+				resets = < &rstctl1 0x9 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:263 */
+				status = "okay";                       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:211 */
+				compatible = "nxp,lpc-i2s";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:212 */
+				#address-cells = < 0x1 >;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:213 */
+				#size-cells = < 0x0 >;                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:214 */
+				dmas = < &dma0 0x2 >;                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:215 */
+				dma-names = "rx";                      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:216 */
+				pinctrl-0 = < &pinmux_flexcomm1_i2s >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:217 */
+				pinctrl-names = "default";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:218 */
+			};
+
+			/* node '/soc/peripheral@50000000/flexcomm@108000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:267 */
+			flexcomm2: arduino_i2c: flexcomm@108000 {
+				reg = < 0x108000 0x1000 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:269 */
+				interrupts = < 0x10 0x0 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:270 */
+				clocks = < &clkctl1 0x102 >;           /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:271 */
+				resets = < &rstctl1 0xa >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:272 */
+				compatible = "nxp,lpc-i2c";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:165 */
+				status = "okay";                       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:166 */
+				pinctrl-0 = < &pinmux_flexcomm2_i2c >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:167 */
+				pinctrl-names = "default";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:168 */
+				clock-frequency = < 0x61a80 >;         /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:169 */
+				#address-cells = < 0x1 >;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:170 */
+				#size-cells = < 0x0 >;                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:171 */
+
+				/* node '/soc/peripheral@50000000/flexcomm@108000/fxos8700@1e' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:173 */
+				fxos8700: fxos8700@1e {
+					compatible = "nxp,fxos8700";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:174 */
+					reg = < 0x1e >;                   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:175 */
+					int1-gpios = < &gpio1 0x5 0x1 >;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:176 */
+					reset-gpios = < &gpio1 0x7 0x0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:177 */
+				};
+
+				/* node '/soc/peripheral@50000000/flexcomm@108000/ti_tmp11x@48' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:180 */
+				ti_tmp11x: ti_tmp11x@48 {
+					compatible = "ti,tmp11x"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:181 */
+					reg = < 0x48 >;           /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:182 */
+					#address-cells = < 0x1 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:183 */
+					#size-cells = < 0x0 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:184 */
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/flexcomm@109000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:276 */
+			flexcomm3: i2s1: flexcomm@109000 {
+				reg = < 0x109000 0x1000 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:278 */
+				interrupts = < 0x11 0x0 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:279 */
+				clocks = < &clkctl1 0x103 >;           /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:280 */
+				resets = < &rstctl1 0xb >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:281 */
+				status = "okay";                       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:223 */
+				compatible = "nxp,lpc-i2s";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:224 */
+				#address-cells = < 0x1 >;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:225 */
+				#size-cells = < 0x0 >;                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:226 */
+				dmas = < &dma0 0x7 >;                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:227 */
+				dma-names = "tx";                      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:228 */
+				pinctrl-0 = < &pinmux_flexcomm3_i2s >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:229 */
+				pinctrl-names = "default";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:230 */
+			};
+
+			/* node '/soc/peripheral@50000000/flexcomm@122000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:285 */
+			flexcomm4: arduino_serial: flexcomm@122000 {
+				reg = < 0x122000 0x1000 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:287 */
+				interrupts = < 0x12 0x0 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:288 */
+				clocks = < &clkctl1 0x104 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:289 */
+				resets = < &rstctl1 0xc >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:290 */
+				compatible = "nxp,lpc-usart";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:189 */
+				status = "okay";                         /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:190 */
+				current-speed = < 0x1c200 >;             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:191 */
+				pinctrl-0 = < &pinmux_flexcomm4_usart >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:192 */
+				pinctrl-names = "default";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:193 */
+				dmas = < &dma0 0x8 >,
+				       < &dma0 0x9 >;                    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:194 */
+				dma-names = "rx",
+				            "tx";                        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:195 */
+			};
+
+			/* node '/soc/peripheral@50000000/flexcomm@123000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:294 */
+			flexcomm5: arduino_spi: flexcomm@123000 {
+				reg = < 0x123000 0x1000 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:296 */
+				interrupts = < 0x13 0x0 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:297 */
+				clocks = < &clkctl1 0x105 >;           /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:298 */
+				resets = < &rstctl1 0xd >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:299 */
+				compatible = "nxp,lpc-spi";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:199 */
+				status = "okay";                       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:200 */
+				#address-cells = < 0x1 >;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:201 */
+				#size-cells = < 0x0 >;                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:202 */
+				dmas = < &dma0 0xa >,
+				       < &dma0 0xb >;                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:203 */
+				dma-names = "rx",
+				            "tx";                      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:204 */
+				pinctrl-0 = < &pinmux_flexcomm5_spi >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:205 */
+				pinctrl-names = "default";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:206 */
+			};
+
+			/* node '/soc/peripheral@50000000/flexcomm@124000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:303 */
+			flexcomm6: flexcomm@124000 {
+				compatible = "nxp,lpc-flexcomm"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:304 */
+				reg = < 0x124000 0x1000 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:305 */
+				interrupts = < 0x2b 0x0 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:306 */
+				clocks = < &clkctl1 0x106 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:307 */
+				resets = < &rstctl1 0xe >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:308 */
+				status = "disabled";             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:309 */
+			};
+
+			/* node '/soc/peripheral@50000000/flexcomm@125000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:312 */
+			flexcomm7: flexcomm@125000 {
+				compatible = "nxp,lpc-flexcomm"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:313 */
+				reg = < 0x125000 0x1000 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:314 */
+				interrupts = < 0x2c 0x0 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:315 */
+				clocks = < &clkctl1 0x107 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:316 */
+				resets = < &rstctl1 0xf >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:317 */
+				status = "disabled";             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:318 */
+			};
+
+			/* node '/soc/peripheral@50000000/i2c@127000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:321 */
+			pmic_i2c: i2c@127000 {
+				reg = < 0x127000 0x1000 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:323 */
+				interrupts = < 0x15 0x0 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:324 */
+				clocks = < &clkctl1 0x10f >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:325 */
+				resets = < &rstctl1 0x17 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:326 */
+				status = "okay";                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:235 */
+				compatible = "nxp,lpc-i2c";       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:236 */
+				clock-frequency = < 0x61a80 >;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:237 */
+				#address-cells = < 0x1 >;         /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:238 */
+				#size-cells = < 0x0 >;            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:239 */
+				pinctrl-0 = < &pinmux_pmic_i2c >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:240 */
+				pinctrl-names = "default";        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:241 */
+
+				/* node '/soc/peripheral@50000000/i2c@127000/pca9420@61' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:243 */
+				pca9420: pca9420@61 {
+					compatible = "nxp,pca9420"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:244 */
+					reg = < 0x61 >;             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:245 */
+					nxp,enable-modesel-pins;    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:246 */
+
+					/* node '/soc/peripheral@50000000/i2c@127000/pca9420@61/BUCK1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:248 */
+					buck1: BUCK1 {
+						regulator-boot-on; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:249 */
+					};
+
+					/* node '/soc/peripheral@50000000/i2c@127000/pca9420@61/BUCK2' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:252 */
+					buck2: BUCK2 {
+						regulator-boot-on; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:253 */
+					};
+
+					/* node '/soc/peripheral@50000000/i2c@127000/pca9420@61/LDO1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:256 */
+					ldo1: LDO1 {
+						regulator-boot-on; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:257 */
+					};
+
+					/* node '/soc/peripheral@50000000/i2c@127000/pca9420@61/LDO2' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:260 */
+					ldo2: LDO2 {
+						regulator-boot-on; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:261 */
+					};
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/usbhs@144000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:330 */
+			usbhs: zephyr_udc0: usbhs@144000 {
+				compatible = "nxp,lpcip3511";  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:331 */
+				reg = < 0x144000 0x1000 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:332 */
+				interrupts = < 0x32 0x1 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:333 */
+				num-bidir-endpoints = < 0x6 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:334 */
+				status = "okay";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:393 */
+				phy-handle = < &usbphy >;      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:394 */
+			};
+
+			/* node '/soc/peripheral@50000000/usbphy@13b000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:338 */
+			usbphy: usbphy@13b000 {
+				compatible = "nxp,usbphy";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:339 */
+				reg = < 0x13b000 0x1000 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:340 */
+				status = "okay";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:398 */
+				tx-d-cal = < 0xc >;          /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:399 */
+				tx-cal-45-dp-ohms = < 0x6 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:400 */
+				tx-cal-45-dm-ohms = < 0x6 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:401 */
+				phandle = < 0xe >;           /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:394 */
+			};
+
+			/* node '/soc/peripheral@50000000/spi@126000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:344 */
+			hs_lspi: spi@126000 {
+				compatible = "nxp,lpc-spi";  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:345 */
+				reg = < 0x126000 0x1000 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:354 */
+				interrupts = < 0x14 0x0 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:355 */
+				clocks = < &clkctl1 0x10e >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:356 */
+				resets = < &rstctl1 0x16 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:357 */
+				status = "disabled";         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:358 */
+				#address-cells = < 0x1 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:359 */
+				#size-cells = < 0x0 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:360 */
+			};
+
+			/* node '/soc/peripheral@50000000/dma-controller@104000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:363 */
+			dma0: dma-controller@104000 {
+				compatible = "nxp,lpc-dma"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:364 */
+				reg = < 0x104000 0x1000 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:365 */
+				interrupts = < 0x1 0x0 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:366 */
+				dma-channels = < 0x21 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:367 */
+				#dma-cells = < 0x1 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:369 */
+				status = "okay";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:336 */
+				phandle = < 0x6 >;          /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:160 */
+			};
+
+			/* node '/soc/peripheral@50000000/dma-controller@105000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:372 */
+			dma1: dma-controller@105000 {
+				compatible = "nxp,lpc-dma"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:373 */
+				reg = < 0x105000 0x1000 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:374 */
+				interrupts = < 0x36 0x0 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:375 */
+				dma-channels = < 0x21 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:376 */
+				status = "disabled";        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:377 */
+				#dma-cells = < 0x1 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:378 */
+			};
+
+			/* node '/soc/peripheral@50000000/dmic@121000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:381 */
+			dmic0: dmic@121000 {
+				#address-cells = < 0x1 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:382 */
+				#size-cells = < 0x0 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:383 */
+				compatible = "nxp,dmic";       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:384 */
+				reg = < 0x121000 0x1000 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:385 */
+				interrupts = < 0x19 0x0 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:386 */
+				clocks = < &clkctl0 0xa00 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:388 */
+				status = "okay";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:451 */
+				pinctrl-0 = < &pinmux_dmic0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:452 */
+				pinctrl-names = "default";     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:453 */
+				use2fs;                        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:454 */
+
+				/* node '/soc/peripheral@50000000/dmic@121000/dmic-channel@0' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:390 */
+				pdmc0: dmic-channel@0 {
+					reg = < 0x0 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:391 */
+					dmas = < &dma0 0x10 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:392 */
+					status = "okay";       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:461 */
+					gainshift = < 0x3 >;   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:462 */
+					dc-cutoff = "155hz";   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:463 */
+					dc-gain = < 0x1 >;     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:464 */
+				};
+
+				/* node '/soc/peripheral@50000000/dmic@121000/dmic-channel@1' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:396 */
+				pdmc1: dmic-channel@1 {
+					reg = < 0x1 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:397 */
+					dmas = < &dma0 0x11 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:398 */
+					status = "okay";       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:468 */
+					gainshift = < 0x3 >;   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:469 */
+					dc-cutoff = "155hz";   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:470 */
+					dc-gain = < 0x1 >;     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:471 */
+				};
+
+				/* node '/soc/peripheral@50000000/dmic@121000/dmic-channel@2' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:402 */
+				pdmc2: dmic-channel@2 {
+					reg = < 0x2 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:403 */
+					dmas = < &dma0 0x12 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:404 */
+					status = "disabled";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:405 */
+				};
+
+				/* node '/soc/peripheral@50000000/dmic@121000/dmic-channel@3' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:408 */
+				pdmc3: dmic-channel@3 {
+					reg = < 0x3 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:409 */
+					dmas = < &dma0 0x13 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:410 */
+					status = "disabled";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:411 */
+				};
+
+				/* node '/soc/peripheral@50000000/dmic@121000/dmic-channel@4' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:414 */
+				pdmc4: dmic-channel@4 {
+					reg = < 0x4 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:415 */
+					dmas = < &dma0 0x14 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:416 */
+					status = "disabled";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:417 */
+				};
+
+				/* node '/soc/peripheral@50000000/dmic@121000/dmic-channel@5' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:420 */
+				pdmc5: dmic-channel@5 {
+					reg = < 0x5 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:421 */
+					dmas = < &dma0 0x15 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:422 */
+					status = "disabled";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:423 */
+				};
+
+				/* node '/soc/peripheral@50000000/dmic@121000/dmic-channel@6' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:426 */
+				pdmc6: dmic-channel@6 {
+					reg = < 0x6 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:427 */
+					dmas = < &dma0 0x16 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:428 */
+					status = "disabled";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:429 */
+				};
+
+				/* node '/soc/peripheral@50000000/dmic@121000/dmic-channel@7' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:432 */
+				pdmc7: dmic-channel@7 {
+					reg = < 0x7 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:433 */
+					dmas = < &dma0 0x17 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:434 */
+					status = "disabled";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:435 */
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/timers@113000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:439 */
+			os_timer: timers@113000 {
+				compatible = "nxp,os-timer"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:440 */
+				reg = < 0x113000 0x1000 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:441 */
+				interrupts = < 0x29 0x0 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:442 */
+				resets = < &rstctl1 0x1b >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:443 */
+				status = "okay";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:146 */
+				wakeup-source;               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:147 */
+			};
+
+			/* node '/soc/peripheral@50000000/rtc@30000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:447 */
+			rtc: rtc@30000 {
+				compatible = "nxp,lpc-rtc"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:448 */
+				reg = < 0x30000 0x1000 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:449 */
+				interrupts = < 0x20 0x0 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:450 */
+				status = "okay";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:151 */
+
+				/* node '/soc/peripheral@50000000/rtc@30000/rtc_highres' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:453 */
+				rtc_highres: rtc_highres {
+					compatible = "nxp,lpc-rtc-highres"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:454 */
+					status = "disabled";                /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:455 */
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/random@138000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:459 */
+			trng: random@138000 {
+				compatible = "nxp,kinetis-trng"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:460 */
+				reg = < 0x138000 0x1000 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:461 */
+				status = "okay";                 /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:462 */
+				interrupts = < 0x1f 0x0 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:463 */
+			};
+
+			/* node '/soc/peripheral@50000000/pwm@146000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:466 */
+			sc_timer: pwm@146000 {
+				compatible = "nxp,sctimer-pwm";  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:467 */
+				reg = < 0x146000 0x1000 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:468 */
+				interrupts = < 0xc 0x0 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:469 */
+				clocks = < &clkctl1 0x900 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:471 */
+				prescaler = < 0x8 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:472 */
+				#pwm-cells = < 0x3 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:473 */
+				status = "okay";                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:364 */
+				pinctrl-0 = < &pinmux_sctimer >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:365 */
+				pinctrl-names = "default";       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:366 */
+				phandle = < 0x1a >;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:92 */
+			};
+
+			/* node '/soc/peripheral@50000000/watchdog@e000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:476 */
+			wwdt0: watchdog@e000 {
+				compatible = "nxp,lpc-wwdt";  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:477 */
+				reg = < 0xe000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:478 */
+				clocks = < &clkctl0 0x2600 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:479 */
+				interrupts = < 0x0 0x0 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:480 */
+				clk-divider = < 0x1 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:482 */
+				status = "okay";              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:340 */
+			};
+
+			/* node '/soc/peripheral@50000000/watchdog@2e000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:485 */
+			wwdt1: watchdog@2e000 {
+				compatible = "nxp,lpc-wwdt";  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:486 */
+				reg = < 0x2e000 0x1000 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:487 */
+				clocks = < &clkctl0 0x2601 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:488 */
+				interrupts = < 0x34 0x0 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:489 */
+				status = "disabled";          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:490 */
+				clk-divider = < 0x1 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:491 */
+			};
+
+			/* node '/soc/peripheral@50000000/usdhc@136000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:494 */
+			usdhc0: usdhc@136000 {
+				compatible = "nxp,imx-usdhc";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:495 */
+				reg = < 0x136000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:496 */
+				interrupts = < 0x2d 0x0 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:498 */
+				clocks = < &clkctl1 0x200 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:499 */
+				max-current-330 = < 0x3fc >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:500 */
+				max-current-180 = < 0x3fc >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:501 */
+				max-bus-freq = < 0xc65d400 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:502 */
+				min-bus-freq = < 0x61a80 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:503 */
+				status = "okay";                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:370 */
+				no-1-8-v;                       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:372 */
+				pwr-gpios = < &gpio2 0xa 0x0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:373 */
+				cd-gpios = < &gpio2 0x9 0x1 >;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:374 */
+				pinctrl-0 = < &pinmux_usdhc >;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:382 */
+				pinctrl-names = "default";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:383 */
+
+				/* node '/soc/peripheral@50000000/usdhc@136000/sdmmc' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:376 */
+				sdmmc {
+					compatible = "zephyr,sdmmc-disk"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:377 */
+					disk-name = "SD";                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:378 */
+					status = "okay";                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:379 */
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/usdhc@137000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:506 */
+			usdhc1: usdhc@137000 {
+				compatible = "nxp,imx-usdhc"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:507 */
+				reg = < 0x137000 0x1000 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:508 */
+				status = "disabled";          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:509 */
+				interrupts = < 0x2e 0x0 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:510 */
+				clocks = < &clkctl1 0x201 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:511 */
+				max-current-330 = < 0x3fc >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:512 */
+				max-current-180 = < 0x3fc >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:513 */
+				max-bus-freq = < 0xc65d400 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:514 */
+				min-bus-freq = < 0x61a80 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:515 */
+			};
+
+			/* node '/soc/peripheral@50000000/cmp@139000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:518 */
+			acmp: cmp@139000 {
+				compatible = "nxp,kinetis-acmp"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:519 */
+				reg = < 0x139000 0x1000 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:520 */
+				interrupts = < 0x18 0x0 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:521 */
+				clocks = < &clkctl1 0x2200 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:522 */
+				status = "disabled";             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:523 */
+			};
+
+			/* node '/soc/peripheral@50000000/adc@13a000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:526 */
+			lpadc0: adc@13a000 {
+				compatible = "nxp,lpc-lpadc";   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:527 */
+				reg = < 0x13a000 0x304 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:528 */
+				interrupts = < 0x16 0x0 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:529 */
+				clk-divider = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:531 */
+				clk-source = < 0x0 >;           /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:532 */
+				voltage-ref = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:533 */
+				calibration-average = < 0x80 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:534 */
+				power-level = < 0x0 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:535 */
+				offset-value-a = < 0xa >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:536 */
+				offset-value-b = < 0xa >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:537 */
+				#io-channel-cells = < 0x1 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:538 */
+				clocks = < &clkctl1 0xf00 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:539 */
+				status = "okay";                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:387 */
+				pinctrl-0 = < &pinmux_lpadc0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:388 */
+				pinctrl-names = "default";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:389 */
+			};
+
+			/* node '/soc/peripheral@50000000/ctimer@28000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:542 */
+			ctimer0: ctimer@28000 {
+				compatible = "nxp,lpc-ctimer"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:543 */
+				reg = < 0x28000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:544 */
+				interrupts = < 0xa 0x0 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:545 */
+				clk-source = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:547 */
+				clocks = < &clkctl1 0x0 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:548 */
+				mode = < 0x0 >;                /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:549 */
+				input = < 0x0 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:550 */
+				prescale = < 0x0 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:551 */
+				status = "okay";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:405 */
+			};
+
+			/* node '/soc/peripheral@50000000/ctimer@29000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:554 */
+			ctimer1: ctimer@29000 {
+				compatible = "nxp,lpc-ctimer"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:555 */
+				reg = < 0x29000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:556 */
+				interrupts = < 0xb 0x0 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:557 */
+				clk-source = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:559 */
+				clocks = < &clkctl1 0x1 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:560 */
+				mode = < 0x0 >;                /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:561 */
+				input = < 0x0 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:562 */
+				prescale = < 0x0 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:563 */
+				status = "okay";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:409 */
+			};
+
+			/* node '/soc/peripheral@50000000/ctimer@2a000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:566 */
+			ctimer2: ctimer@2a000 {
+				compatible = "nxp,lpc-ctimer"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:567 */
+				reg = < 0x2a000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:568 */
+				interrupts = < 0x27 0x0 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:569 */
+				clk-source = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:571 */
+				clocks = < &clkctl1 0x2 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:572 */
+				mode = < 0x0 >;                /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:573 */
+				input = < 0x0 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:574 */
+				prescale = < 0x0 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:575 */
+				status = "okay";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:413 */
+			};
+
+			/* node '/soc/peripheral@50000000/ctimer@2b000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:578 */
+			ctimer3: ctimer@2b000 {
+				compatible = "nxp,lpc-ctimer"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:579 */
+				reg = < 0x2b000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:580 */
+				interrupts = < 0xd 0x0 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:581 */
+				clk-source = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:583 */
+				clocks = < &clkctl1 0x3 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:584 */
+				mode = < 0x0 >;                /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:585 */
+				input = < 0x0 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:586 */
+				prescale = < 0x0 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:587 */
+				status = "okay";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:417 */
+			};
+
+			/* node '/soc/peripheral@50000000/ctimer@2c000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:590 */
+			ctimer4: ctimer@2c000 {
+				compatible = "nxp,lpc-ctimer"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:591 */
+				reg = < 0x2c000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:592 */
+				interrupts = < 0x28 0x0 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:593 */
+				clk-source = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:595 */
+				clocks = < &clkctl1 0x4 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:596 */
+				mode = < 0x0 >;                /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:597 */
+				input = < 0x0 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:598 */
+				prescale = < 0x0 >;            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:599 */
+				status = "okay";               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:421 */
+			};
+
+			/* node '/soc/peripheral@50000000/i3c@36000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:602 */
+			i3c0: i3c@36000 {
+				compatible = "nxp,mcux-i3c"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:603 */
+				reg = < 0x36000 0x1000 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:604 */
+				interrupts = < 0x31 0x0 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:605 */
+				clocks = < &clkctl1 0x600 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:606 */
+				clk-divider = < 0x2 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:607 */
+				clk-divider-slow = < 0x1 >;  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:608 */
+				clk-divider-tc = < 0x1 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:609 */
+				#address-cells = < 0x3 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:611 */
+				#size-cells = < 0x0 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:612 */
+				pinctrl-0 = < &pinmux_i3c >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:425 */
+				pinctrl-names = "default";   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:426 */
+				status = "okay";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:428 */
+
+				/* node '/soc/peripheral@50000000/i3c@36000/wm8904@1a0000000000000000' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:430 */
+				audio_codec: wm8904@1a0000000000000000 {
+					compatible = "wolfson,wm8904"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:431 */
+					reg = < 0x1a 0x0 0x0 >;        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:432 */
+					clock-source = "MCLK";         /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:434 */
+					clocks = < &clkctl0 0x1200 >;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:436 */
+					clock-names = "mclk";          /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:437 */
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/mrt@2d000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:615 */
+			mrt: mrt@2d000 {
+				compatible = "nxp,mrt";        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:616 */
+				reg = < 0x2d000 0x100 >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:617 */
+				interrupts = < 0x9 0x0 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:618 */
+				num-channels = < 0x4 >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:619 */
+				num-bits = < 0x18 >;           /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:620 */
+				clocks = < &clkctl1 0xb00 >;   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:621 */
+				resets = < &rstctl1 0x20008 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:622 */
+				#address-cells = < 0x1 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:623 */
+				#size-cells = < 0x0 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:624 */
+
+				/* node '/soc/peripheral@50000000/mrt@2d000/mrt_channel@0' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:626 */
+				mrt_channel0: mrt_channel@0 {
+					compatible = "nxp,mrt-channel"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:627 */
+					reg = < 0x0 >;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:628 */
+					status = "disabled";            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:629 */
+				};
+
+				/* node '/soc/peripheral@50000000/mrt@2d000/mrt_channel@1' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:632 */
+				mrt_channel1: mrt_channel@1 {
+					compatible = "nxp,mrt-channel"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:633 */
+					reg = < 0x1 >;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:634 */
+					status = "disabled";            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:635 */
+				};
+
+				/* node '/soc/peripheral@50000000/mrt@2d000/mrt_channel@2' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:638 */
+				mrt_channel2: mrt_channel@2 {
+					compatible = "nxp,mrt-channel"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:639 */
+					reg = < 0x2 >;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:640 */
+					status = "disabled";            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:641 */
+				};
+
+				/* node '/soc/peripheral@50000000/mrt@2d000/mrt_channel@3' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:644 */
+				mrt_channel3: mrt_channel@3 {
+					compatible = "nxp,mrt-channel"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:645 */
+					reg = < 0x3 >;                  /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:646 */
+					status = "disabled";            /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:647 */
+				};
+			};
+
+			/* node '/soc/peripheral@50000000/mbox@110000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:651 */
+			mbox: mbox@110000 {
+				#mbox-cells = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:652 */
+				compatible = "nxp,mbox-imx-mu"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:654 */
+				reg = < 0x110000 0x1000 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:655 */
+				interrupts = < 0x22 0x0 >;      /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:657 */
+				rx-channels = < 0x4 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:658 */
+				status = "okay";                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:447 */
+			};
+		};
+
+		/* node '/soc/interrupt-controller@e000e100' defined in zephyr/dts/arm/armv8-m.dtsi:13 */
+		nvic: interrupt-controller@e000e100 {
+			#address-cells = < 0x1 >;            /* in zephyr/dts/arm/armv8-m.dtsi:14 */
+			compatible = "arm,v8m-nvic";         /* in zephyr/dts/arm/armv8-m.dtsi:15 */
+			reg = < 0xe000e100 0xc00 >;          /* in zephyr/dts/arm/armv8-m.dtsi:16 */
+			interrupt-controller;                /* in zephyr/dts/arm/armv8-m.dtsi:17 */
+			#interrupt-cells = < 0x2 >;          /* in zephyr/dts/arm/armv8-m.dtsi:18 */
+			arm,num-irq-priority-bits = < 0x3 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:674 */
+			phandle = < 0x1 >;                   /* in zephyr/dts/arm/armv8-m.dtsi:10 */
+		};
+
+		/* node '/soc/timer@e000e010' defined in zephyr/dts/arm/armv8-m.dtsi:21 */
+		systick: timer@e000e010 {
+			compatible = "arm,armv8m-systick"; /* in zephyr/dts/arm/armv8-m.dtsi:22 */
+			reg = < 0xe000e010 0x10 >;         /* in zephyr/dts/arm/armv8-m.dtsi:23 */
+			status = "disabled";               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:118 */
+		};
+	};
+
+	/* node '/chosen' defined in zephyr/dts/common/skeleton.dtsi:13 */
+	chosen {
+		zephyr,entropy = &trng;                    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:20 */
+		zephyr,flash-controller = &ext_flash_ctrl; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:44 */
+		zephyr,flash = &mx25um51345g;              /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:45 */
+		zephyr,code-partition = &slot0_partition;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:46 */
+		zephyr,uart-mcumgr = &flexcomm0;           /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:47 */
+		zephyr,sram = &sram0;                      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:48 */
+		zephyr,console = &flexcomm0;               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:49 */
+		zephyr,shell-uart = &flexcomm0;            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:50 */
+	};
+
+	/* node '/aliases' defined in zephyr/dts/common/skeleton.dtsi:15 */
+	aliases {
+		sw0 = &user_button_1;             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:21 */
+		sw1 = &user_button_2;             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:22 */
+		led0 = &green_led;                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:23 */
+		led1 = &blue_led;                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:24 */
+		led2 = &red_led;                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:25 */
+		temperature-sensor = &ti_tmp11x;  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:26 */
+		usart-0 = &flexcomm0;             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:27 */
+		pwm-0 = &sc_timer;                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:29 */
+		pwm-led0 = &green_pwm_led;        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:30 */
+		green-pwm-led = &green_pwm_led;   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:31 */
+		blue-pwm-led = &blue_pwm_led;     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:32 */
+		red-pwm-led = &red_pwm_led;       /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:33 */
+		watchdog0 = &wwdt0;               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:34 */
+		magn0 = &fxos8700;                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:35 */
+		accel0 = &fxos8700;               /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:36 */
+		sdhc0 = &usdhc0;                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:37 */
+		dmic-dev = &dmic0;                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:38 */
+		mcuboot-button0 = &user_button_1; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:39 */
+		mbox = &mbox;                     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:40 */
+	};
+
+	/* node '/cpus' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:23 */
+	cpus {
+		#address-cells = < 0x1 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:24 */
+		#size-cells = < 0x0 >;    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:25 */
+
+		/* node '/cpus/cpu@0' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:27 */
+		cpu0: cpu@0 {
+			compatible = "arm,cortex-m33f";        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:28 */
+			reg = < 0x0 >;                         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:29 */
+			clock-frequency = < 0xee84daf >;       /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:30 */
+			cpu-power-states = < &idle &suspend >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:31 */
+			#address-cells = < 0x1 >;              /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:32 */
+			#size-cells = < 0x1 >;                 /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:33 */
+
+			/* node '/cpus/cpu@0/mpu@e000ed90' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:35 */
+			mpu: mpu@e000ed90 {
+				compatible = "arm,armv8m-mpu"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:36 */
+				reg = < 0xe000ed90 0x40 >;     /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:37 */
+			};
+		};
+
+		/* node '/cpus/power-states' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:41 */
+		power-states {
+
+			/* node '/cpus/power-states/idle' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:42 */
+			idle: idle {
+				compatible = "zephyr,power-state"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:43 */
+				power-state-name = "runtime-idle"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:44 */
+				min-residency-us = < 0xa >;        /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:45 */
+				phandle = < 0x16 >;                /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:31 */
+			};
+
+			/* node '/cpus/power-states/suspend' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:48 */
+			suspend: suspend {
+				compatible = "zephyr,power-state";    /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:49 */
+				power-state-name = "suspend-to-idle"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:50 */
+				min-residency-us = < 0x3e8 >;         /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:51 */
+				phandle = < 0x17 >;                   /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:31 */
+			};
+		};
+	};
+
+	/* node '/dsp' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:56 */
+	dsp: dsp {
+		#address-cells = < 0x1 >;          /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:57 */
+		#size-cells = < 0x1 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:58 */
+		compatible = "nxp,rt600-dsp-ctrl"; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:60 */
+		sysctl = < &sysctl0 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:61 */
+		status = "disabled";               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:63 */
+
+		/* node '/dsp/region@24020000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:65 */
+		region@24020000 {
+			reg = < 0x24020000 0x400 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:66 */
+			type = < 0x0 >;             /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:67 */
+		};
+
+		/* node '/dsp/region@20400000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:70 */
+		region@20400000 {
+			reg = < 0x20400000 0x40000 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:71 */
+			type = < 0x1 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:72 */
+		};
+
+		/* node '/dsp/region@20440000' defined in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:75 */
+		region@20440000 {
+			reg = < 0x20440000 0x40000 >; /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:76 */
+			type = < 0x2 >;               /* in zephyr/dts/arm/nxp/imxrt/nxp_rt6xx_common.dtsi:77 */
+		};
+	};
+
+	/* node '/gpio_keys' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:53 */
+	gpio_keys {
+		compatible = "gpio-keys"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:54 */
+
+		/* node '/gpio_keys/button_0' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:56 */
+		user_button_1: button_0 {
+			label = "User SW1";         /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:57 */
+			gpios = < &gpio1 0x1 0x1 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:58 */
+			zephyr,code = < 0xb >;      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:59 */
+			status = "okay";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:344 */
+		};
+
+		/* node '/gpio_keys/button_1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:62 */
+		user_button_2: button_1 {
+			label = "User SW2";         /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:63 */
+			gpios = < &gpio0 0xa 0x1 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:64 */
+			zephyr,code = < 0x2 >;      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:65 */
+			status = "okay";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:348 */
+		};
+	};
+
+	/* node '/leds' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:69 */
+	leds: leds {
+		compatible = "gpio-leds"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:70 */
+
+		/* node '/leds/led_1' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:72 */
+		green_led: led_1 {
+			gpios = < &gpio0 0xe 0x0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:73 */
+			label = "User LED_GREEN";   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:74 */
+			status = "okay";            /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:352 */
+		};
+
+		/* node '/leds/led_2' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:77 */
+		blue_led: led_2 {
+			gpios = < &gpio0 0x1a 0x0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:78 */
+			label = "User LED_BLUE";     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:79 */
+			status = "okay";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:356 */
+		};
+
+		/* node '/leds/led_3' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:82 */
+		red_led: led_3 {
+			gpios = < &gpio0 0x1f 0x0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:83 */
+			label = "User LED_RED";      /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:84 */
+			status = "okay";             /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:360 */
+		};
+	};
+
+	/* node '/pwmleds' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:88 */
+	pwmleds {
+		compatible = "pwm-leds"; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:89 */
+
+		/* node '/pwmleds/green_pwm_led' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:91 */
+		green_pwm_led: green_pwm_led {
+			pwms = < &sc_timer 0x0 0x1312d00 0x0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:92 */
+			label = "Green PWM LED";                /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:93 */
+			status = "okay";                        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:94 */
+		};
+
+		/* node '/pwmleds/blue_pwm_led' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:97 */
+		blue_pwm_led: blue_pwm_led {
+			pwms = < &sc_timer 0x6 0x1312d00 0x0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:98 */
+			label = "Blue PWM LED";                 /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:99 */
+			status = "okay";                        /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:100 */
+		};
+
+		/* node '/pwmleds/red_pwm_led' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:103 */
+		red_pwm_led: red_pwm_led {
+			pwms = < &sc_timer 0x6 0x1312d00 0x0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:104 */
+			label = "Red PWM LED";                  /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:105 */
+			status = "disabled";                    /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:106 */
+		};
+	};
+
+	/* node '/arduino-connector' defined in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:110 */
+	arduino_header: arduino-connector {
+		compatible = "arduino-header-r3";          /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:111 */
+		#gpio-cells = < 0x2 >;                     /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:112 */
+		gpio-map-mask = < 0xffffffff 0xffffffc0 >; /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:113 */
+		gpio-map-pass-thru = < 0x0 0x3f >;         /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:114 */
+		gpio-map = < 0x0 0x0 &gpio0 0x5 0x0 >,
+		           < 0x1 0x0 &gpio0 0x6 0x0 >,
+		           < 0x2 0x0 &gpio0 0x13 0x0 >,
+		           < 0x3 0x0 &gpio0 0x14 0x0 >,
+		           < 0x4 0x0 &gpio0 0x11 0x0 >,
+		           < 0x5 0x0 &gpio0 0x12 0x0 >,
+		           < 0x6 0x0 &gpio0 0x1e 0x0 >,
+		           < 0x7 0x0 &gpio0 0x1d 0x0 >,
+		           < 0x8 0x0 &gpio0 0x1c 0x0 >,
+		           < 0x9 0x0 &gpio0 0x1b 0x0 >,
+		           < 0xa 0x0 &gpio1 0x0 0x0 >,
+		           < 0xb 0x0 &gpio1 0xa 0x0 >,
+		           < 0xc 0x0 &gpio1 0x2 0x0 >,
+		           < 0xd 0x0 &gpio1 0x8 0x0 >,
+		           < 0xe 0x0 &gpio1 0x9 0x0 >,
+		           < 0xf 0x0 &gpio1 0x7 0x0 >,
+		           < 0x10 0x0 &gpio1 0x6 0x0 >,
+		           < 0x11 0x0 &gpio1 0x5 0x0 >,
+		           < 0x12 0x0 &gpio1 0x4 0x0 >,
+		           < 0x13 0x0 &gpio1 0x3 0x0 >,
+		           < 0x14 0x0 &gpio0 0x11 0x0 >,
+		           < 0x15 0x0 &gpio0 0x12 0x0 >;   /* in zephyr/boards/nxp/mimxrt685_evk/mimxrt685_evk_mimxrt685s_cm33.dts:115 */
+	};
+};

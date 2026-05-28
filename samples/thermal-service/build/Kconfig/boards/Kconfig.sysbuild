@@ -1,0 +1,2 @@
+# Load Sysbuild board Kconfig descriptions.
+osource "/home/blake/Repos/zephyr/zephyr-rust/zephyr/boards/nxp/mimxrt685_evk/Kconfig.sysbuild"
