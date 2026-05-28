@@ -27,11 +27,11 @@ No hardware required.
 mkdir zephyrproject ; cd zephyrproject
 
 # Zephyr core (includes Rust build-system patches)
-git clone -b qemu-odp-thermal https://github.com/kurtjd/zephyr.git
+git clone -b qemu-odp-thermal https://github.com/OpenDevicePartnership/zephyr.git
 
 # Rust module (thermal-service sample + mock sensor driver)
 mkdir modules\lang -Force
-git clone -b qemu-odp-thermal https://github.com/kurtjd/zephyr-lang-rust.git modules\lang\rust
+git clone -b qemu-odp-thermal https://github.com/OpenDevicePartnership/zephyr-lang-rust.git modules\lang\rust
 ```
 
 ### 2. Initialize west workspace
@@ -89,8 +89,8 @@ The mock sensor ramps from 25°C → 45°C in 0.5° steps (one reading every ~2 
 
 | Repo | Branch | What's changed |
 |------|--------|----------------|
-| [`kurtjd/zephyr`](https://github.com/kurtjd/zephyr/tree/qemu-odp-thermal) | `qemu-odp-thermal` | CMake patches for Rust toolchain integration |
-| [`kurtjd/zephyr-lang-rust`](https://github.com/kurtjd/zephyr-lang-rust/tree/qemu-odp-thermal) | `qemu-odp-thermal` | Thermal-service sample, mock driver, DTS bindings |
+| [`OpenDevicePartnership/zephyr`](https://github.com/OpenDevicePartnership/zephyr/tree/qemu-odp-thermal) | `qemu-odp-thermal` | CMake patches for Rust toolchain integration |
+| [`OpenDevicePartnership/zephyr-lang-rust`](https://github.com/OpenDevicePartnership/zephyr-lang-rust/tree/qemu-odp-thermal) | `qemu-odp-thermal` | Thermal-service sample, mock driver, DTS bindings |
 
 The Zephyr core patches enable the Rust build system. Once those land upstream, only the Rust module repo will be needed.
 
