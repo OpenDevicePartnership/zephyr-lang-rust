@@ -67,6 +67,10 @@ optional = true
 version = "0.7.0"
 optional = true
 
+[dependencies.embedded-fans-async]
+version = "0.2.0"
+# u_Note: This should probably be made an optional dependency eventually. Possibly create something like CONFIG_FLASH and CONFIG_GPIO (currently in device.rs) and see if that would make optional dependencies possible
+
 # These are needed at build time.
 # Whether these need to be vendored is an open question.  They are not
 # used by the core Zephyr tree, but are needed by zephyr applications.
