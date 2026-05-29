@@ -118,10 +118,25 @@
           type: Int
         - name: min-start-rpm
           type: Int
-        - name: tachometer
-          type: !Phandle
-            device: crate::device::tachometer::Tachometer
-          optional: true
+        # - name: tachometer
+        #   type: !Phandle
+        #     device: crate::device::tachometer::Tachometer
+        #   optional: true
+
+# PWM controllers.  A `pwm-fan` (and any other device referencing a PWM controller through a
+# `pwms` phandle) needs the controller node to expose the raw device accessors, so we match the
+# supported PWM controller compatibles here and generate them.
+- name: pwm-controller
+  cfg: CONFIG_PWM
+  rules:
+    - !Compatible
+      names:
+        - "nxp,sctimer-pwm"
+      level: 0
+  actions:
+    - !Instance
+      raw: !Myself
+      device: crate::device::pwm::Pwm
 
 # A tachometer (RPM sensor).  In Zephyr every tachometer driver is a regular `sensor` device that
 # reports on the `SENSOR_CHAN_RPM` channel, so a single wrapper works for all of them.  This augment
