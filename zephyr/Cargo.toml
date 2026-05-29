@@ -26,6 +26,10 @@ cfg-if = "1.0"
 log = "0.4.22"
 arrayvec = { version = "0.7.6", default-features = false }
 
+# Imports for pwm_fan.rs:
+embedded-fans-async = {version = "0.2.0"}
+thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services"}
+
 [dependencies.fugit]
 version = "0.3.7"
 
@@ -66,10 +70,6 @@ optional = true
 [dependencies.embassy-executor]
 version = "0.7.0"
 optional = true
-
-[dependencies.embedded-fans-async]
-version = "0.2.0"
-# u_Note: This should probably be made an optional dependency eventually. Possibly create something like CONFIG_FLASH and CONFIG_GPIO (currently in device.rs) and see if that would make optional dependencies possible
 
 # These are needed at build time.
 # Whether these need to be vendored is an open question.  They are not

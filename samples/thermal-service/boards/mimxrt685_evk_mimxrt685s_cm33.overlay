@@ -1,0 +1,36 @@
+/*
+ * Copyright (c) 2024 Linaro LTD
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Devicetree overlay for thermal-service sample on mimxrt685_evk
+ */
+
+/ {
+	aliases {
+		pwm-fan = &fan0;
+		temperature-sensor = &ti_tmp11x;
+	};
+
+    tachometer: tachometer {
+        compatible = "zephyr,tach-gpio";
+        gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
+        pulses-per-round = <2>;
+    };
+
+	fan0: fan0 {
+		compatible = "pwm-fan";
+		pwms = <&sc_timer 0 25000 0>;  /* channel 0, 25000 cycles period, no flags */
+		max-rpm = <5000>;
+		min-rpm = <1000>;
+		min-start-rpm = <1500>;
+        tachometer = <&tachometer>;
+	};
+};
+
+/* External TMP11x temperature sensor on breadboard, connected via Arduino I2C header */
+&arduino_i2c {
+	ti_tmp11x: ti_tmp11x@48 {
+		compatible = "ti,tmp11x";
+		reg = <0x48>;
+	};
+};

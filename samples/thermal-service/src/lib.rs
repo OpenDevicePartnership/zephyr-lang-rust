@@ -52,9 +52,11 @@ async fn heartbeat() {
 #[embassy_executor::task]
 async fn thermal_service() {
 
-    // Event handler for the thermal service
-    struct EventHandler;
-    impl embedded_services::event::Sender<thermal_service_interface::sensor::Event> for EventHandler {
+    // Sensor event handler
+    struct SensorEventHandler;
+    static SENSOR_EVENT_SENDERS: StaticCell<[SensorEventHandler; 1]> = StaticCell::new();
+    let sensor_event_senders = SENSOR_EVENT_SENDERS.init([SensorEventHandler]);
+    impl embedded_services::event::Sender<thermal_service_interface::sensor::Event> for SensorEventHandler {
         async fn send(&mut self, event: thermal_service_interface::sensor::Event) {
             info!("Thermal event: {:?}", event);
         }
@@ -67,18 +69,14 @@ async fn thermal_service() {
     static SENSOR_RESOURCES: StaticCell<thermal_service::sensor::Resources<tmp11x::Sensor, 16>> = StaticCell::new();
     let sensor_resources = SENSOR_RESOURCES.init(thermal_service::sensor::Resources::default());
 
-    // Static storage for event senders
-    static EVENT_SENDERS: StaticCell<[EventHandler; 1]> = StaticCell::new();
-    let event_senders = EVENT_SENDERS.init([EventHandler]);
-
-    // Initialize sensor runner. Not using the service here.
-    let (_sensor_service, sensor_runner) = thermal_service::sensor::Service::<tmp11x::Sensor, EventHandler, 16>::new(
+    // Initialize sensor runner.
+    let (sensor_service, sensor_runner) = thermal_service::sensor::Service::<tmp11x::Sensor, SensorEventHandler, 16>::new(
         sensor_resources,                                   // Resources used by the temperature sensor
 
         // Thermal service init params.
         thermal_service::sensor::InitParams {
-            driver: tmp11x::Sensor::new(),                  // The TMP11x temperature sensor driver
-            event_senders: event_senders.as_mut_slice(),    // List of event senders
+            driver: tmp11x::Sensor::new(),                         // The TMP11x temperature sensor driver
+            event_senders: sensor_event_senders.as_mut_slice(),    // List of event senders
 
             // Thermal service sensor config
             config: thermal_service::sensor::Config {
@@ -91,9 +89,53 @@ async fn thermal_service() {
     .await
     .expect("ERROR: Failed to initialize sensor service");
 
-    // Start the sensor task.
-    info!("Starting sensor runner.");
-    sensor_runner.run().await;
+    // Fan event handler
+    struct FanEventHandler;
+    static FAN_EVENT_SENDERS: StaticCell<[FanEventHandler; 1]> = StaticCell::new();
+    let fan_event_senders = FAN_EVENT_SENDERS.init([FanEventHandler]);
+    impl embedded_services::event::Sender<thermal_service_interface::fan::Event> for FanEventHandler {
+        async fn send(&mut self, event: thermal_service_interface::fan::Event) {
+            info!("Thermal event: {:?}", event);
+        }
+        fn try_send(&mut self, _event: thermal_service_interface::fan::Event) -> Option<()> {
+            Some(())
+        }
+    }
+
+    // Static storage for the fan runner resources
+    static FAN_RESOURCES: StaticCell<thermal_service::fan::Resources<zephyr::device::pwm_fan::PwmFan, 16>> = StaticCell::new();
+    let fan_resources = FAN_RESOURCES.init(thermal_service::fan::Resources::default());
+
+    // Initialize fan runner, using sensor_service.
+    let (_fan_service, fan_runner) = thermal_service::fan::Service::<
+        zephyr::device::pwm_fan::PwmFan,
+        thermal_service::sensor::Service<tmp11x::Sensor, SensorEventHandler, 16>,
+        FanEventHandler,
+        16
+    >::new(
+        fan_resources,
+
+        // Fan service init params.
+        thermal_service::fan::InitParams {
+            driver: zephyr::devicetree::labels::fan0::get_instance().unwrap(),
+            event_senders: fan_event_senders.as_mut_slice(),
+            sensor_service,
+
+            // Thermal service fan config
+            config: thermal_service::fan::Config {
+                ..Default::default()
+            },
+        },
+    )
+    .await
+    .expect("ERROR: Failed to initialize fan service.");
+
+    // Start the services
+    info!("Starting thermal_service() runners.");
+    embassy_futures::join::join(
+        sensor_runner.run(),
+        fan_runner.run(),
+    ).await;
 }
 
 mod tmp11x {
@@ -104,7 +146,7 @@ mod tmp11x {
     pub struct Sensor(zephyr::device::temperature_sensor::TemperatureSensor);
     impl Sensor {
         pub fn new() -> Self {
-            Self(zephyr::devicetree::aliases::temperature_sensor::get_instance().unwrap())
+            Self(zephyr::devicetree::labels::ti_tmp11x::get_instance().unwrap())
         }
     }
     impl thermal_service_interface::sensor::Driver for Sensor {} // Marker trait so Sensor can be used with thermal_service.

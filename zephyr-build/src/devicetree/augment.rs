@@ -30,6 +30,12 @@ pub enum PropertyType {
     String,
     /// An array of integers (e.g., `curve = <20 40 60 80>;`)
     IntArray,
+    /// A phandle reference (e.g., `tach-gpios = <&gpio0 5 0>;`)
+    /// The device field specifies the wrapper type to construct.
+    Phandle {
+        /// Full path to the device wrapper type (e.g., "crate::device::gpio::GpioPin")
+        device: String,
+    },
 }
 
 /// A devicetree property to extract and pass to the constructor.
@@ -40,6 +46,9 @@ pub struct PropertyArg {
     /// The type of the property.
     #[serde(rename = "type")]
     pub prop_type: PropertyType,
+    /// If true, property is optional. Generates `Option<T>` — `Some(value)` if present, `None` if absent.
+    #[serde(default)]
+    pub optional: bool,
 }
 
 /// This action is given to each node in the device tree, and it is given a chance to return
@@ -241,7 +250,15 @@ impl RawInfo {
             .unwrap_or(&[])
             .iter()
             .map(|p| {
-                match p.prop_type {
+                // Check if property exists for optional handling
+                let has_prop = node.has_prop(&p.name);
+                
+                if p.optional && !has_prop {
+                    // Optional property not present — return None
+                    return quote! { None };
+                }
+                
+                let value = match &p.prop_type {
                     PropertyType::Int => {
                         let val = node.get_number(&p.name)
                             .unwrap_or_else(|| panic!("Property '{}' not found or not an int", p.name));
@@ -257,9 +274,44 @@ impl RawInfo {
                             .unwrap_or_else(|| panic!("Property '{}' not found or not an int array", p.name));
                         quote! { &[#(#vals),*] }
                     }
+                    PropertyType::Phandle { device: phandle_device } => {
+                        let words = node.get_words(&p.name)
+                            .unwrap_or_else(|| panic!("Property '{}' not found", p.name));
+                        let target = if let Word::Phandle(handle) = &words[0] {
+                            handle.node_ref()
+                        } else {
+                            panic!("Property '{}' is not a phandle", p.name);
+                        };
+                        let target_route = target.route_to_rust();
+                        let phandle_device_id = str_to_path(phandle_device);
+                        // Extract additional args from the phandle cells (e.g., pin number, flags)
+                        let args: Vec<u32> = words[1..].iter().filter_map(|n| n.as_number()).collect();
+                        // Use a unique static name based on property name to avoid conflicts
+                        let unique_name = format_ident!("PHANDLE_UNIQUE_{}", p.name.to_uppercase().replace("-", "_"));
+                        let static_name = format_ident!("PHANDLE_STATIC_{}", p.name.to_uppercase().replace("-", "_"));
+                        quote! {
+                            {
+                                static #unique_name: crate::device::Unique = crate::device::Unique::new();
+                                static #static_name: crate::device::NoStatic = crate::device::NoStatic::new();
+                                unsafe {
+                                    let device = #target_route :: get_instance_raw();
+                                    let device_static = #target_route :: get_static_raw();
+                                    #phandle_device_id::new(&#unique_name, &#static_name, device, device_static #(, #args)*).unwrap()
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                if p.optional {
+                    // Wrap in Some for optional properties
+                    quote! { Some(#value) }
+                } else {
+                    value
                 }
             })
             .collect();
+
         match self {
             Self::Myself => {
                 let ord = node.ord;

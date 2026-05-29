@@ -88,6 +88,7 @@
 
 # The temperature-sensor node.
 - name: temperature-sensor
+  cfg: CONFIG_SENSOR
   rules:
     - !Compatible
       names:
@@ -99,8 +100,9 @@
       raw: !Myself
       device: crate::device::temperature_sensor::TemperatureSensor
 
-# Node for 'Fan' from fan.rs
+# Node for 'PwmFan' from pwm_fan.rs
 - name: pwm-fan
+  cfg: CONFIG_PWM
   rules:
     - !Compatible
       names: ["pwm-fan"]
@@ -108,7 +110,7 @@
   actions:
     - !Instance
       raw: !Phandle pwms
-      device: crate::device::fan::Fan
+      device: crate::device::pwm_fan::PwmFan
       properties:
         - name: max-rpm
           type: Int
@@ -116,6 +118,32 @@
           type: Int
         - name: min-start-rpm
           type: Int
+        - name: tachometer
+          type: !Phandle
+            device: crate::device::tachometer::Tachometer
+          optional: true
+
+# A tachometer (RPM sensor).  In Zephyr every tachometer driver is a regular `sensor` device that
+# reports on the `SENSOR_CHAN_RPM` channel, so a single wrapper works for all of them.  This augment
+# makes any matching tach node expose the raw accessors so it can be referenced by a phandle (e.g.
+# the `tach-device` property of a `pwm-fan`).
+- name: tachometer
+  cfg: CONFIG_SENSOR
+  rules:
+    - !Compatible
+      names:
+        - "zephyr,tach-gpio"
+        - "nuvoton,npcx-tach"
+        - "microchip,xec-tach"
+        - "ite,it8xxx2-tach"
+        - "ite,it51xxx-tach"
+        - "ene,kb1200-tach"
+        - "realtek,rts5912-tach"
+      level: 0
+  actions:
+    - !Instance
+      raw: !Myself
+      device: crate::device::tachometer::Tachometer
 
 # Generate a pseudo node that matches all of the labels across the tree with their nodes.
 - name: labels
