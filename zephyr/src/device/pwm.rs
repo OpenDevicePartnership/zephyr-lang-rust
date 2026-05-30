@@ -9,7 +9,7 @@
 use super::{NoStatic, Unique};
 
 /// A PWM controller device.
-pub(crate) struct Pwm {
+pub struct Pwm {
     device: *const crate::raw::device,
 }
 
