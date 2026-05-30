@@ -137,6 +137,7 @@ impl embedded_fans_async::Fan for PwmFan {
         let actual_rpm: u16 = (actual_duty_cycle * self.max_rpm as f32) as u16;
 
         self.last_set_rpm = actual_rpm;
+        log::info!("Set RPM speed. (Requested RPM={}, RPM That Actually Got Set={}, Calculated Pulse={}, Calculated Duty Cycle={}, Actual Duty Cycle={})", rpm, actual_rpm, pulse, duty_cycle, actual_duty_cycle);
         Ok(actual_rpm)
     }
 }
