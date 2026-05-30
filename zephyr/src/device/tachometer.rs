@@ -25,7 +25,6 @@ impl Tachometer {
         unique: &Unique,
         _static: &NoStatic,
         device: *const raw::device,
-        _device_static: &'static NoStatic,
     ) -> Option<Tachometer> {
         if !unique.once() {
             return None;

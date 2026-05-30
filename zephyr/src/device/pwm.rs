@@ -7,18 +7,17 @@
 //! phandle, such as [`crate::device::pwm_fan::PwmFan`].
 
 use super::{NoStatic, Unique};
-use crate::raw;
 
 /// A PWM controller device.
 pub(crate) struct Pwm {
-    device: *const raw::device,
+    device: *const crate::raw::device,
 }
 
 impl Pwm {
     pub(crate) unsafe fn new(
         unique: &Unique,
         _static: &NoStatic,
-        device: *const raw::device,
+        device: *const crate::raw::device,
     ) -> Option<Pwm> {
         if !unique.once() {
             return None;
@@ -28,19 +27,19 @@ impl Pwm {
 
     // Wrap a raw PWM controller device handle.  Used by consumers (e.g. a `pwm-fan`) that obtain
     // the controller handle through a `pwms` phandle and manage their own channel/period/flags.
-    pub(crate) unsafe fn from_raw(device: *const raw::device) -> Pwm {
+    pub(crate) unsafe fn from_raw(device: *const crate::raw::device) -> Pwm {
         Pwm { device }
     }
 
     // Validate that the PWM device is ready.
     pub(crate) fn is_ready(&self, channel: u32, period: u32, flags: u16) -> bool {
-        let spec = raw::pwm_dt_spec {
+        let spec = crate::raw::pwm_dt_spec {
             dev: self.device,
             channel,
             period,
             flags,
         };
-        unsafe { raw::pwm_is_ready_dt(&spec) }
+        unsafe { crate::raw::pwm_is_ready_dt(&spec) }
     }
 
     // Set the period and pulse width for a single PWM output.
@@ -51,7 +50,7 @@ impl Pwm {
         pulse: u32,
         flags: u16,
     ) -> crate::error::Result<()> {
-        let ret = unsafe { raw::pwm_set_cycles(self.device, channel, period, pulse, flags) };
+        let ret = unsafe { crate::raw::pwm_set_cycles(self.device, channel, period, pulse, flags) };
         crate::error::to_result_void(ret)
     }
 }

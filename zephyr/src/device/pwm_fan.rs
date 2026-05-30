@@ -51,7 +51,7 @@ pub struct PwmFan {
     min_start_rpm: u16,
 
     // Optional devicetree properties
-    //tachometer: Option<crate::device::tachometer::Tachometer>,
+    tachometer: Option<crate::device::tachometer::Tachometer>,
 
     // Internal data (not relavent to the devicetree)
     last_set_rpm: u16,
@@ -71,7 +71,7 @@ impl PwmFan {
         max_rpm: u32,
         min_rpm: u32,
         min_start_rpm: u32,
-        //tachometer: Option<crate::device::tachometer::Tachometer>,
+        tachometer: Option<crate::device::tachometer::Tachometer>,
     ) -> Option<PwmFan> {
         // Make sure this instance doesn't already exist.
         if !unique.once() { return None; }
@@ -87,7 +87,7 @@ impl PwmFan {
         let pwm = crate::device::pwm::Pwm::from_raw(device);
         if !pwm.is_ready(channel, period, flags) { return None; }
 
-        Some(PwmFan {pwm, channel, period, flags, max_rpm, min_rpm, min_start_rpm, /*tachometer,*/ last_set_rpm: 0})
+        Some(PwmFan {pwm, channel, period, flags, max_rpm, min_rpm, min_start_rpm, tachometer, last_set_rpm: 0})
     }
 }
 
@@ -146,20 +146,19 @@ impl embedded_fans_async::RpmSense for PwmFan {
     // If a tachometer device is configured, this method reads the actual RPM from it.
     // If no tachometer is configured, this method returns the last manually-set RPM.
     async fn rpm(&mut self) -> Result<u16, Self::Error> {
-        // match &self.tachometer {
-        //     Some(tachometer) => {
-        //         // Read the actual RPM from the tachometer sensor (SENSOR_CHAN_RPM).
-        //         match tachometer.read_rpm() {
-        //             Ok(rpm) => Ok(rpm.clamp(0, u16::MAX as i32) as u16),
-        //             Err(e) => {
-        //                 log::error!("Failed to read tachometer RPM, Zephyr error status {}.", e);
-        //                 Err(embedded_fans_async::ErrorKind::Other)
-        //             }
-        //         }
-        //     }
-        //     None => Ok(self.last_set_rpm),
-        // }
-        return Ok(1);
+        match &self.tachometer {
+            Some(tachometer) => {
+                // Read the actual RPM from the tachometer sensor (SENSOR_CHAN_RPM).
+                match tachometer.read_rpm() {
+                    Ok(rpm) => Ok(rpm.clamp(0, u16::MAX as i32) as u16),
+                    Err(e) => {
+                        log::error!("Failed to read tachometer RPM, Zephyr error status {}.", e);
+                        Err(embedded_fans_async::ErrorKind::Other)
+                    }
+                }
+            }
+            None => Ok(self.last_set_rpm),
+        }
     }
 }
 
