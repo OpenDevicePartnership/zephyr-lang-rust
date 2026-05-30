@@ -39,8 +39,8 @@
 /// ```
 /// 
 pub struct PwmFan {
-    // Part of `pwms` devicetree Phandle
-    device: *const crate::raw::device,
+    // The PWM controller this fan is driven by, plus the output selection from the `pwms` phandle.
+    pwm: crate::device::pwm::Pwm,
     channel: u32,
     period: u32,
     flags: u16,
@@ -83,7 +83,11 @@ impl PwmFan {
         let min_rpm: u16 = min_rpm.try_into().ok()?;
         let min_start_rpm: u16 = min_start_rpm.try_into().ok()?;
 
-        Some(PwmFan {device, channel, period, flags, max_rpm, min_rpm, min_start_rpm, /*tachometer,*/ last_set_rpm: 0})
+        // Wrap the controller handle and make sure it's ready before handing out the fan.
+        let pwm = crate::device::pwm::Pwm::from_raw(device);
+        if !pwm.is_ready(channel, period, flags) { return None; }
+
+        Some(PwmFan {pwm, channel, period, flags, max_rpm, min_rpm, min_start_rpm, /*tachometer,*/ last_set_rpm: 0})
     }
 }
 
@@ -114,18 +118,8 @@ impl embedded_fans_async::Fan for PwmFan {
         // Convert duty cycle to pulse
         let pulse: u32 = (duty_cycle * self.period as f32) as u32;
 
-        let ret: i32 = unsafe {
-            crate::raw::pwm_set_cycles(
-                self.device,
-                self.channel,
-                self.period,
-                pulse,
-                self.flags,
-            )
-        };
-
         // Check for errors.
-        if let Err(e) = crate::error::to_result_void(ret) {
+        if let Err(e) = self.pwm.set_cycles(self.channel, self.period, pulse, self.flags) {
             match e.0 {
                 crate::raw::EINVAL => {
                     log::error!("pwm_set_cycles() returned with Zephyr error status {} (EINVAL), meaning pulse > period.",e);

@@ -100,7 +100,7 @@
       raw: !Myself
       device: crate::device::temperature_sensor::TemperatureSensor
 
-# Node for 'PwmFan' from pwm_fan.rs
+# Matcher for 'PwmFan' from pwm_fan.rs
 - name: pwm-fan
   cfg: CONFIG_PWM
   rules:
@@ -123,16 +123,11 @@
         #     device: crate::device::tachometer::Tachometer
         #   optional: true
 
-# PWM controllers.  A `pwm-fan` (and any other device referencing a PWM controller through a
-# `pwms` phandle) needs the controller node to expose the raw device accessors, so we match the
-# supported PWM controller compatibles here and generate them.
+# Matcher for `Pwm` from pwm.rs.
 - name: pwm-controller
   cfg: CONFIG_PWM
   rules:
-    - !Compatible
-      names:
-        - "nxp,sctimer-pwm"
-      level: 0
+    - !HasProp "#pwm-cells"
   actions:
     - !Instance
       raw: !Myself
