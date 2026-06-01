@@ -22,7 +22,7 @@ pub struct TemperatureValue {
 }
 
 impl TemperatureSensor {
-    /// Constructor, intended to be called by devicetree generated code.
+    /// Constructor, used by the devicetree generated code.
     #[allow(dead_code)]
     pub(crate) unsafe fn new(
         unique: &Unique,

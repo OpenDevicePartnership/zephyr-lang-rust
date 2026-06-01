@@ -20,7 +20,7 @@ pub struct Tachometer {
 }
 
 impl Tachometer {
-    /// Constructor, intended to be called by devicetree generated code.
+    /// Constructor, used by the devicetree generated code.
     pub(crate) unsafe fn new(
         unique: &Unique,
         _static: &NoStatic,
