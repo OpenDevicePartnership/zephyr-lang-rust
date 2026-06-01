@@ -1,1 +1,0 @@
-"mcuboot":"/home/blake/Repos/zephyr/zephyr-rust/bootloader/mcuboot":"/home/blake/Repos/zephyr/zephyr-rust/bootloader/mcuboot/boot/zephyr/sysbuild"
