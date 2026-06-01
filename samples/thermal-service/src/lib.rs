@@ -9,15 +9,21 @@ use embassy_time::{Duration, Timer};
 use log::info;
 use static_cell::StaticCell;
 use odp_service_common::runnable_service::{Service, ServiceRunner};
-use thermal_service_interface::fan::FanService;
 
 // Entry point into the Rust program from Zephyr.
 #[unsafe(no_mangle)]
 extern "C" fn rust_main() {
     const MAIN_PRIO: c_int = 2;
 
+    // SAFETY: `rust_main` runs once during application startup before any rust tasks
+    // are spawned, so the global logger is initialized before concurrent use.
     unsafe {
         zephyr::set_logger().unwrap();
+    }
+
+    // Set our own priority.
+    // SAFETY: `rust_main` runs in a thread context.
+    unsafe {
         zephyr::raw::k_thread_priority_set(zephyr::raw::k_current_get(), MAIN_PRIO);
     }
 
