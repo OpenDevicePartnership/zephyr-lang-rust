@@ -1,0 +1,4 @@
+west:
+  command: /home/blake/Repos/zephyr/.venv/bin/west build -t rustdoc
+  topdir: /home/blake/Repos/zephyr/zephyr-rust
+  version: 1.5.0

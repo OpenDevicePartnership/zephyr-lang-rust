@@ -15,17 +15,17 @@
 };
 
 / {
-    //tachometer: tachometer {
-        //compatible = "zephyr,tach-gpio";
-        //gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
-        //pulses-per-round = <2>;
-    //};
+    tachometer: tachometer {
+        compatible = "zephyr,tach-gpio";
+        gpios = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        pulses-per-round = <2>;
+    };
 
 	fan0: my-fan {
 		compatible = "pwm-fan";
-		pwms = <&sc_timer 7 25000 0>;
+		pwms = <&sc_timer 7 40000 0>;
 		max-rpm = <5000>;
-		min-rpm = <1000>;
-		min-start-rpm = <1500>;
+		min-rpm = <0>;
+		min-start-rpm = <3000>;
 	};
 };

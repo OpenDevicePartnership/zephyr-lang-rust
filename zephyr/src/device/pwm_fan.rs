@@ -138,6 +138,12 @@ impl embedded_fans_async::Fan for PwmFan {
 
         self.last_set_rpm = actual_rpm;
         log::info!("Set RPM speed. (Requested RPM={}, RPM That Actually Got Set={}, Calculated Pulse={}, Calculated Duty Cycle={}, Actual Duty Cycle={})", rpm, actual_rpm, pulse, duty_cycle, actual_duty_cycle);
+
+        {
+            // u_Note: this is temporary for debugging, remove eventually
+            use embedded_fans_async::RpmSense;
+            if let Ok(tach_rpm) = self.rpm().await { log::info!("Tachometer reads {} RPM", tach_rpm); }
+        }
         Ok(actual_rpm)
     }
 }
@@ -151,10 +157,14 @@ impl embedded_fans_async::RpmSense for PwmFan {
             Some(tachometer) => {
                 // Read the actual RPM from the tachometer sensor (SENSOR_CHAN_RPM).
                 match tachometer.read_rpm() {
-                    Ok(rpm) => Ok(rpm.clamp(0, u16::MAX as i32) as u16),
+                    Ok(rpm) => {
+                        let rpm_clamped: i32 = rpm.clamp(0, u16::MAX as i32);
+                        log::info!("RPM read from tachometer (rpm={}, rpm_clamped={})", rpm, rpm_clamped);
+                        return Ok(rpm.clamp(0, u16::MAX as i32) as u16);
+                    }
                     Err(e) => {
                         log::error!("Failed to read tachometer RPM, Zephyr error status {}.", e);
-                        Err(embedded_fans_async::ErrorKind::Other)
+                        return Err(embedded_fans_async::ErrorKind::Other);
                     }
                 }
             }

@@ -9,6 +9,7 @@ use embassy_time::{Duration, Timer};
 use log::info;
 use static_cell::StaticCell;
 use odp_service_common::runnable_service::{Service, ServiceRunner};
+use thermal_service_interface::fan::FanService;
 
 // Entry point into the Rust program from Zephyr.
 #[unsafe(no_mangle)]
@@ -107,7 +108,7 @@ async fn thermal_service() {
     let fan_resources = FAN_RESOURCES.init(thermal_service::fan::Resources::default());
 
     // Initialize fan runner, using sensor_service.
-    let (_fan_service, fan_runner) = thermal_service::fan::Service::<
+    let (fan_service, fan_runner) = thermal_service::fan::Service::<
         zephyr::device::pwm_fan::PwmFan,
         thermal_service::sensor::Service<tmp11x::Sensor, SensorEventHandler, 16>,
         FanEventHandler,
@@ -129,6 +130,15 @@ async fn thermal_service() {
     )
     .await
     .expect("ERROR: Failed to initialize fan service.");
+
+    // Fan service settings
+    {
+        use thermal_service_interface::fan::FanService;
+        fan_service.enable_auto_control().await.expect("ERROR: Failed to call fan_service.enable_auto_control().");
+        fan_service.set_state_temp(thermal_service_interface::fan::OnState::Min, 21.0).await;
+        fan_service.set_state_temp(thermal_service_interface::fan::OnState::Ramping, 22.0).await;
+        fan_service.set_state_temp(thermal_service_interface::fan::OnState::Max, 25.0).await;
+    }
 
     // Start the services
     info!("Starting thermal_service() runners.");
