@@ -1,4 +1,0 @@
-west:
-  command: /home/blake/Repos/zephyr/.venv/bin/west build -b native_sim/native/64 --pristine
-  topdir: /home/blake/Repos/zephyr/zephyr-rust
-  version: 1.5.0
