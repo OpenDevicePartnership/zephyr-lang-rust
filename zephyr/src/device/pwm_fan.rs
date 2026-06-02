@@ -58,6 +58,7 @@ pub struct PwmFan {
 }
 
 impl PwmFan {
+    /// Constructor, used by the devicetree generated code.
     pub(crate) unsafe fn new(
         unique: &crate::device::Unique,
         _static: &crate::device::NoStatic,
