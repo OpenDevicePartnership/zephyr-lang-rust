@@ -33,7 +33,6 @@ pub enum UartConfigDataBits {
 }
 
 /// Hardware flow control options.
-///
 /// With flow control set to none, any operations related to flow control signals can be managed by user with uart_line_ctrl functions. In other cases, flow control is managed by hardware/driver.  
 ///
 /// (Note: This is just the Rust equivalent of `uart_config_flow_control` from `#include <zephyr/drivers/uart.h>`)
@@ -237,11 +236,6 @@ impl Uart {
     }
 
     /// Reconfigure the UART at runtime.
-    ///
-    /// Most apps don't need to call this — the underlying Zephyr driver
-    /// configures the hardware from devicetree (`current-speed`, etc.) at boot,
-    /// defaulting to 8N1 with no flow control. Call this only if you need
-    /// settings that differ from those devicetree defaults.
     pub fn configure(
         &self,
         baudrate: u32,
