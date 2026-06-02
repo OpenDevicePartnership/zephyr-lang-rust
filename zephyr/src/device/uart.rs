@@ -69,12 +69,123 @@ impl UartStatic {
     pub(crate) const fn new() -> Self {
         Self {
             rx_dma_buffer:   [const { UnsafeCell::new([0; RX_DMA_BUFFER_SIZE]) }; 2],
+            rx_next_dma_buffer:   core::sync::atomic::AtomicUsize, // Index of rx_dma_buffer (either 0 or 1) corresponding to the NEXT buffer to use for double buffering
             rx_ringbuffer:  UnsafeCell::new(heapless::spsc::Queue::new()),
             rx_waker: embassy_sync::waitqueue::AtomicWaker::new(),
 
             tx_dma_buffer:   [const { UnsafeCell::new([0; TX_DMA_BUFFER_SIZE]) }; 2],
+            tx_next_dma_buffer:   core::sync::atomic::AtomicUsize, // Index of tx_dma_buffer (either 0 or 1) corresponding to the NEXT buffer to use for double buffering
             tx_ringbuffer:  UnsafeCell::new(heapless::spsc::Queue::new()),
             tx_waker: embassy_sync::waitqueue::AtomicWaker::new(),
+        }
+    }
+}
+
+// Uart callback. This function signiature has been taken from the uart_callback_set() docs.
+unsafe extern "C" fn uart_callback(_device: *const crate::raw::device, event: *mut crate::raw::uart_event, user_data: *mut core::ffi::c_void) {
+    use core::sync::atomic::Ordering;
+
+    // Reborrow the UartStatic state and uart event
+    let state = &*(user_data as *const UartStatic);
+    let event = &*event;
+
+    match event.type_ {
+
+        // Buffer is no longer used by UART driver.
+        crate::raw::uart_event_type_UART_RX_BUF_RELEASED => {
+            // Nothing to do — we already drained everything on RDY, and the
+            // next BUF_REQUEST will give this buffer back to the driver.
+        }
+
+        // Driver requests next buffer for continuous reception.
+        crate::raw::uart_event_type_UART_RX_BUF_REQUEST => {
+            // Give the driver the OTHER buffer
+            let index = state.rx_next_dma_buffer.fetch_xor(1, Ordering::AcqRel) & 1; // XOR to toggle the bit
+            let buffer = state.rx_dma_buffer[index].get() as *mut u8;
+            
+            // Call uart_rx_buf_rsp() to provide the next recieve buffer.
+            // We're not gonna return an error code here since if this function fails,
+            // RX will eventually fire UART_RX_DISABLED and we'll recover there. But, we'll still print out the specific error codes here
+            // for convenience.
+            if let Err(e) = crate::error::to_result_void(
+                crate::raw::uart_rx_buf_rsp(_device, buffer, RX_DMA_BUFFER_SIZE)
+            ) {
+                match e.0 {
+                    crate::raw::EBUSY => log::error!("uart_rx_buf_rsp() returned -EBUSY: Next buffer already set."),
+                    crate::raw::ENOTSUP => log::error!("uart_rx_buf_rsp() returned -ENOTSUP: API is not enabled."),
+                    crate::raw::EACCES => log::error!("uart_rx_buf_rsp() returned -EACCES: Receiver is already disabled (function called too late?)."),
+                    _ => log::error!("uart_rx_buf_rsp() failed with Zephyr errno {}", e),
+                }
+                // again, not going to return anything here. This is just for logging
+            }
+        }
+
+        // RX has been disabled and can be reenabled
+        crate::raw::uart_event_type_UART_RX_DISABLED => {
+            // RX shut down (we missed a BUF_REQUEST, or someone called
+            // uart_rx_disable). Restart from buffer 0.
+            state.rx_next_dma_buffer.store(1, Ordering::Release);
+            let buffer = state.rx_dma_buffer[0].get() as *mut u8;
+
+            // Call uart_rx_enable() to restart uart. 
+            // We don't need to explicitly handle an error
+            // here, since if uart_rx_enable() fails, we'll just hit uart_event_type_UART_RX_DISABLED the
+            // next time around (since UART will still be disabled). We're still going to log the specific
+            // error codes though for conveinience.
+            if let Err(e) = crate::error::to_result_void(
+                crate::raw::uart_rx_enable(_device, buffer, RX_DMA_BUFFER_SIZE, /*timeout_us=*/ 1000,)
+            ) {
+                match e.0 {
+                    crate::raw::EBUSY => log::error!("uart_rx_enable() returned -EBUSY: RX already in progress."),
+                    crate::raw::ENOTSUP => log::error!("uart_rx_enable() returned -ENOTSUP: API is not enabled."),
+                    _ => log::error!("uart_rx_enable() failed with Zephyr errno {}", e),
+                }
+                // again, not going to return anything here. This is just for logging
+            }
+        }
+
+        // Received data is ready for processing.
+        crate::raw::uart_event_type_UART_RX_RDY => {
+            // Bytes landed in one of OUR DMA buffers; drain into the ringbuffer.
+            let rx = event.data.rx.as_ref();
+            let slice = core::slice::from_raw_parts(rx.buf.add(rx.offset), rx.len);
+
+            // SPSC: this callback is the only producer.
+            let ringbuffer = &mut *state.rx_ringbuffer.get();
+            let mut dropped: usize = 0; // Counter to count how many bytes were dropped
+            for &byte in slice {
+                // Enque bytes.
+                // If the queue is full, .enqueue will return an error, and we increment a counter.
+                if ringbuffer.enqueue(byte).is_err() {
+                    dropped += 1;
+                }
+            }
+
+            // Print out a warning if bytes were dropped.
+            if dropped > 0 { log::warn!("Uart RX ringbuffer is full, dropped {} bytes.", dropped); }
+            // u_Note / u_TODO: Probably not a good idea to print inside an ISR callback?
+
+            state.rx_waker.wake();
+        }
+
+        // RX has stopped due to external event.
+        crate::raw::uart_event_type_UART_RX_STOPPED => {
+            // Don't need to do anything specific here, since we will end up at uart_event_type_UART_RX_DISABLED the next time around.
+        }
+
+        // Transmitting aborted due to timeout or uart_tx_abort call
+        crate::raw::uart_event_type_UART_TX_ABORTED => {
+            // u_Note: TODO probably tomorrow
+        }
+
+        // Whole TX buffer was transmitted.
+        crate::raw::uart_event_type_UART_TX_DONE => {
+            // u_Note: TODO probably tomorrow
+        }
+
+        // Unknown event type?
+        _ => {
+            log::warn!("uart_callback() has recieved an unknown event type. Weird! (event: {})", event.type_);
         }
     }
 }
@@ -114,7 +225,7 @@ impl Uart {
                 crate::raw::uart_config_get(self.device, &mut config),
             ) {
                 match e.0 {
-                    crate::raw::ENOSYS => log::error!("uart_confi_get() returned -ENOSYS: driver does not support getting current configuration."),
+                    crate::raw::ENOSYS => log::error!("uart_config_get() returned -ENOSYS: driver does not support getting current configuration."),
                     crate::raw::ENOTSUP => log::error!("uart_config_get() returned -ENOTSUP: API is not enabled."),
                     _ => log::error!("uart_config_get() failed with Zephyr errno {}", e),
                 }
