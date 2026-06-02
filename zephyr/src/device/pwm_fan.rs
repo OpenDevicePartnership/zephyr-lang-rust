@@ -1,9 +1,9 @@
-//! Device wrapper for a PWM fan.
+//! Device wrapper for a PWM fan. See docs for struct `PwmFan` for usage information.
 
 /// A PWM-controlled fan.
 /// (This is a wrapper around the `struct device` in Zephyr that represents a PWM controller.)
 /// 
-/// # Devicetree
+/// # Using This Struct From The Devicetree:
 /// 
 /// In the devicetree, use compatible `"pwm-fan"` with properties:
 /// - `pwms`: PWM controller reference with channel, period, flags
@@ -16,7 +16,7 @@
 ///
 /// Example:
 /// 
-/// 1. Configure a `pwm-fan` in the devicetree
+/// 1. Configure a `pwm-fan` in the devicetree:
 /// ```dts
 /// my_tach: tachometer {
 ///     compatible = "zephyr,tach-gpio";
