@@ -212,6 +212,54 @@ DT_AUGMENTS = \"${DT_AUGMENTS}\"
 ${config_paths}
 ")
 
+  # The block of environment variables below could theoretically be captured in a variable, but this
+  # seems "challenging" in CMake (to be polite), as many of these contain spaces, and the quoting
+  # rules in CMake are inconsistent, at best.
+  # TODO: Figure out how to factor these out.
+
+  # Ensure clippy compliance
+  add_custom_command(
+    OUTPUT rust_clippy_cmd
+#    BYPRODUCTS ${RUST_LIBRARY} ${WRAPPER_FILE}
+    USES_TERMINAL
+    COMMAND
+      ${CMAKE_COMMAND} -E
+      env BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}
+      ZEPHYR_BASE=${ZEPHYR_BASE}
+      DOTCONFIG=${DOTCONFIG}
+      ZEPHYR_DTS=${ZEPHYR_DTS}
+      INCLUDE_DIRS="${include_dirs}"
+      INCLUDE_DEFINES="${include_defines}"
+      WRAPPER_FILE="${WRAPPER_FILE}"
+      DT_AUGMENTS="${DT_AUGMENTS}"
+      BINARY_DIR_INCLUDE_GENERATED="${BINARY_DIR_INCLUDE_GENERATED}"
+      cargo clippy
+      ${rust_build_type_arg}
+
+      # Override the features according to the shield given. For a general case,
+      # this will need to come from a variable or argument.
+      # TODO: This needs to be passed in.
+      # --no-default-features
+      # --features ${SHIELD_FEATURE}
+
+      # Set a replacement so that packages can just use `zephyr-sys` as a package
+      # name to find it.
+      ${command_paths}
+      --target ${RUST_TARGET}
+      --target-dir ${CARGO_TARGET_DIR}
+    COMMENT "Running clippy on Rust application"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+
+  add_custom_target(rust_clippy
+    DEPENDS rust_clippy_cmd
+        # The variables, defined at the top level, don't seem to be accessible here.
+        offsets_h
+        syscall_list_h_target
+        driver_validation_h_target
+        kobj_types_h_target
+  )
+
   # The library is built by invoking Cargo.
   add_cargo_target_with_zephyr_env(librustapp
     ALL
@@ -250,6 +298,7 @@ ${config_paths}
   # <path>/ld.bfd: rust/target/riscv64imac-unknown-none-elf/debug/librustapp.a(45c91108d938afe8-clzdi2.o): unsupported relocation type 0x3d
   target_link_libraries(app PUBLIC $<TARGET_PROPERTY:linker,rt_library> -Wl,--allow-multiple-definition ${RUST_LIBRARY})
   add_dependencies(app librustapp)
+  add_dependencies(app rust_clippy)
 
   # Presumably, Rust applications will have no C source files, but cmake will require them.
   # Add an empty file so that this will build.  The main will come from the rust library.

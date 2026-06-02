@@ -1,0 +1,31 @@
+/*
+ * Copyright (c) 2024 Linaro LTD
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Devicetree overlay for thermal-service sample on mimxrt685_evk
+ */
+
+&flexcomm2 {
+	ti_tmp11x: ti_tmp11x@48 {
+		compatible = "ti,tmp11x";
+		reg = <0x48>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+	};
+};
+
+/ {
+    tachometer: tachometer {
+        compatible = "zephyr,tach-gpio";
+        gpios = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+        pulses-per-round = <2>;
+    };
+
+	fan0: my-fan {
+		compatible = "pwm-fan";
+		pwms = <&sc_timer 7 40000 0>;
+		max-rpm = <5000>;
+		min-rpm = <0>;
+		min-start-rpm = <3000>;
+	};
+};

@@ -21,6 +21,36 @@ use crate::devicetree::{output::dt_to_lower_id, Word};
 
 use super::{DeviceTree, Node};
 
+/// Types of devicetree properties that can be extracted.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum PropertyType {
+    /// A single integer value (e.g., `max-rpm = <5000>;`)
+    Int,
+    /// A string value (e.g., `label = "CPU Fan";`)
+    String,
+    /// An array of integers (e.g., `curve = <20 40 60 80>;`)
+    IntArray,
+    /// A phandle reference (e.g., `tach-gpios = <&gpio0 5 0>;`)
+    /// The device field specifies the wrapper type to construct.
+    Phandle {
+        /// Full path to the device wrapper type (e.g., "crate::device::gpio::GpioPin")
+        device: String,
+    },
+}
+
+/// A devicetree property to extract and pass to the constructor.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PropertyArg {
+    /// The devicetree property name (e.g., "max-rpm").
+    pub name: String,
+    /// The type of the property.
+    #[serde(rename = "type")]
+    pub prop_type: PropertyType,
+    /// If true, property is optional. Generates `Option<T>` — `Some(value)` if present, `None` if absent.
+    #[serde(default)]
+    pub optional: bool,
+}
+
 /// This action is given to each node in the device tree, and it is given a chance to return
 /// additional code to be included in the module associated with that entry.  These are all
 /// assembled together and included in the final generated devicetree.rs.
@@ -140,6 +170,9 @@ pub enum Action {
         device: String,
         /// Full path to a type if this node needs a static associated with each instance.
         static_type: Option<String>,
+        /// Optional list of devicetree properties to extract and pass to the constructor.
+        #[serde(default)]
+        properties: Option<Vec<PropertyArg>>,
     },
     /// Generate all of the labels as its own node.
     Labels,
@@ -158,7 +191,8 @@ impl Action {
                 raw,
                 device,
                 static_type,
-            } => raw.generate(node, device, static_type.as_deref(), cfg_attr),
+                properties,
+            } => raw.generate(node, device, static_type.as_deref(), properties.as_deref(), cfg_attr),
             Action::Labels => {
                 let nodes = tree.labels.iter().map(|(k, v)| {
                     let name = dt_to_lower_id(k);
@@ -205,10 +239,79 @@ impl RawInfo {
         node: &Node,
         device: &str,
         static_type: Option<&str>,
+        properties: Option<&[PropertyArg]>,
         cfg_attr: &Option<TokenStream>,
     ) -> TokenStream {
         let device_id = str_to_path(device);
         let static_type = str_to_path(static_type.unwrap_or("crate::device::NoStatic"));
+
+        // Extract property values from the devicetree node.
+        let prop_args: Vec<TokenStream> = properties
+            .unwrap_or(&[])
+            .iter()
+            .map(|p| {
+                // Check if property exists for optional handling
+                let has_prop = node.has_prop(&p.name);
+                
+                if p.optional && !has_prop {
+                    // Optional property not present — return None
+                    return quote! { None };
+                }
+                
+                let value = match &p.prop_type {
+                    PropertyType::Int => {
+                        let val = node.get_number(&p.name)
+                            .unwrap_or_else(|| panic!("Property '{}' not found or not an int", p.name));
+                        quote! { #val }
+                    }
+                    PropertyType::String => {
+                        let val = node.get_single_string(&p.name)
+                            .unwrap_or_else(|| panic!("Property '{}' not found or not a string", p.name));
+                        quote! { #val }
+                    }
+                    PropertyType::IntArray => {
+                        let vals = node.get_numbers(&p.name)
+                            .unwrap_or_else(|| panic!("Property '{}' not found or not an int array", p.name));
+                        quote! { &[#(#vals),*] }
+                    }
+                    PropertyType::Phandle { device: phandle_device } => {
+                        let words = node.get_words(&p.name)
+                            .unwrap_or_else(|| panic!("Property '{}' not found", p.name));
+                        let target = if let Word::Phandle(handle) = &words[0] {
+                            handle.node_ref()
+                        } else {
+                            panic!("Property '{}' is not a phandle", p.name);
+                        };
+                        let target_route = target.route_to_rust();
+                        let phandle_device_id = str_to_path(phandle_device);
+                        // Extract additional args from the phandle cells (e.g., pin number, flags)
+                        let args: Vec<u32> = words[1..].iter().filter_map(|n| n.as_number()).collect();
+                        // Use a unique static name based on property name to avoid conflicts
+                        let unique_name = format_ident!("PHANDLE_UNIQUE_{}", p.name.to_uppercase().replace("-", "_"));
+                        let static_name = format_ident!("PHANDLE_STATIC_{}", p.name.to_uppercase().replace("-", "_"));
+                        quote! {
+                            {
+                                static #unique_name: crate::device::Unique = crate::device::Unique::new();
+                                static #static_name: crate::device::NoStatic = crate::device::NoStatic::new();
+                                unsafe {
+                                    let device = #target_route :: get_instance_raw();
+                                    let device_static = #target_route :: get_static_raw();
+                                    #phandle_device_id::new(&#unique_name, &#static_name, device, device_static #(, #args)*).unwrap()
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                if p.optional {
+                    // Wrap in Some for optional properties
+                    quote! { Some(#value) }
+                } else {
+                    value
+                }
+            })
+            .collect();
+
         match self {
             Self::Myself => {
                 let ord = node.ord;
@@ -235,7 +338,7 @@ impl RawInfo {
                             pub fn get_instance() -> Option<#device_id> {
                                 unsafe {
                                     let device = get_instance_raw();
-                                    #device_id::new(&UNIQUE, &STATIC, device)
+                                    #device_id::new(&UNIQUE, &STATIC, device #(, #prop_args)*)
                                 }
                             }
                         }
@@ -271,7 +374,7 @@ impl RawInfo {
                         unsafe {
                             let device = #target_route :: get_instance_raw();
                             let device_static = #target_route :: get_static_raw();
-                            #device_id::new(&UNIQUE, &STATIC, device, device_static, #(#args),*)
+                            #device_id::new(&UNIQUE, &STATIC, device, device_static, #(#args),* #(, #prop_args)*)
                         }
                     }
                 }
@@ -294,7 +397,7 @@ impl RawInfo {
                     pub fn get_instance() -> Option<#device_id> {
                         unsafe {
                             let device = #path :: get_instance_raw();
-                            #device_id::new(&UNIQUE, &STATIC, device, #(#get_args),*)
+                            #device_id::new(&UNIQUE, &STATIC, device, #(#get_args),* #(, #prop_args)*)
                         }
                     }
                 }

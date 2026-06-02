@@ -15,6 +15,15 @@ pub mod flash;
 #[cfg(CONFIG_GPIO)]
 pub mod gpio;
 
+#[cfg(CONFIG_SENSOR)]
+pub mod temperature_sensor;
+#[cfg(CONFIG_SENSOR)]
+pub mod tachometer;
+#[cfg(CONFIG_PWM)]
+pub mod pwm;
+#[cfg(CONFIG_PWM)]
+pub mod pwm_fan;
+
 // Allow dead code, because it isn't required for a given build to have any devices.
 /// Device uniqueness.
 ///

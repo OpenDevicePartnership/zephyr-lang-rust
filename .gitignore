@@ -8,4 +8,5 @@ Cargo.lock
 # Cargo encourages a .cargo/config.toml file to symlink to a generated file.  Don't save these.
 .cargo/
 
-build/
+# Ignore any directory named build/ anywhere in the tree (west/cmake out-of-tree builds).
+**/build/

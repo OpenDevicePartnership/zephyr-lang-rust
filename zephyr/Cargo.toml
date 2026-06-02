@@ -26,6 +26,10 @@ cfg-if = "1.0"
 log = "0.4.22"
 arrayvec = { version = "0.7.6", default-features = false }
 
+# Imports for pwm_fan.rs:
+embedded-fans-async = {version = "0.2.0"}
+thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services"}
+
 [dependencies.fugit]
 version = "0.3.7"
 

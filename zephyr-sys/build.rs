@@ -77,6 +77,7 @@ fn main() -> anyhow::Result<()> {
     let bindings = bindings
         // Deprecated
         .blocklist_function("sys_clock_timeout_end_calc")
+        .blocklist_item("Z_UTIL_.*")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
 
     let dotconfig = env::var("DOTCONFIG").expect("missing DOTCONFIG path");
@@ -113,6 +114,13 @@ fn main() -> anyhow::Result<()> {
         // UART
         .allowlist_item_if("CONFIG_UART_.*", || options.contains("CONFIG_SERIAL"))
         .allowlist_function_if("uart_.*", || options.contains("CONFIG_SERIAL"))
+        // Sensor (added for ODP thermal-service)
+        .allowlist_item_if("SENSOR_.*", || options.contains("CONFIG_SENSOR"))
+        .allowlist_function_if("sensor_.*", || options.contains("CONFIG_SENSOR"))
+        // PWM stuff for ODP integration
+        .allowlist_item_if("CONFIG_PWM_.*", || options.contains("CONFIG_PWM"))
+        .allowlist_item_if("PWM_.*", || options.contains("CONFIG_PWM"))
+        .allowlist_function_if("pwm_.*", || options.contains("CONFIG_PWM"))
         // Generate
         .generate()
         .expect("Unable to generate bindings");
