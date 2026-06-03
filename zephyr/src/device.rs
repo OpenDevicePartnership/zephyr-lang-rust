@@ -23,6 +23,8 @@ pub mod tachometer;
 pub mod pwm;
 #[cfg(CONFIG_PWM)]
 pub mod pwm_fan;
+#[cfg(CONFIG_SERIAL)]
+pub mod uart;
 
 // Allow dead code, because it isn't required for a given build to have any devices.
 /// Device uniqueness.
