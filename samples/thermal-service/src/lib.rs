@@ -5,12 +5,12 @@
 
 use core::ffi::c_int;
 use embassy_executor::Spawner;
-use embassy_time::{Duration, Timer};
-use log::{info, error};
+use embassy_time::Timer;
+use log::info;
 use static_cell::StaticCell;
-use odp_service_common::runnable_service::{Service, ServiceRunner};
 
 mod thermal;
+mod utils;
 
 // Entry point into the Rust program from Zephyr.
 #[unsafe(no_mangle)]
@@ -76,5 +76,5 @@ async fn uart_service(spawner: Spawner) {
     let uart_service = UART_SERVICE.init(uart_service::DefaultService::default_smbusespi(relay).unwrap());
     let uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::arduino_serial::get_instance().unwrap();
     let Err(e) = uart_service::task::uart_service(uart_service, uart_driver).await;
-    log::error!("uart_service() encountered an error! Not good");
+    log::error!("uart_service() encountered an error (Error: {:?})", e);
 }

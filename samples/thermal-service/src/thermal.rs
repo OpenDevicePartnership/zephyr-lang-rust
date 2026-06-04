@@ -11,7 +11,7 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
     embedded_services::info!("Initializing thermal service...");
 
     // Create and spawn sensor service
-    let sensor_service = odp_service_common::spawn_service!(
+    let sensor_service = crate::utils::spawn_service!(
         spawner,
         SensorService,
         thermal_service::sensor::InitParams {
@@ -29,7 +29,7 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
     .expect("Failed to spawn sensor_service.");
 
     // Create and spawn fan service
-    let fan_service = odp_service_common::spawn_service!(
+    let fan_service = crate::utils::spawn_service!(
         spawner,
         FanService,
         thermal_service::fan::InitParams {
