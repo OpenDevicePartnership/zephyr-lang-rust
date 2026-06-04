@@ -1,4 +1,5 @@
 //! Rust wrapper for Zephyr UART driver.
+//! # u_Note: This driver uses Zephyr's async UART API, which
 
 use core::cell::UnsafeCell;
 

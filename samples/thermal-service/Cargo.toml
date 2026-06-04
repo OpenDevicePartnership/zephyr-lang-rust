@@ -23,6 +23,8 @@ odp-service-common = { git = "https://github.com/OpenDevicePartnership/embedded-
 static_cell = "2.1"
 thermal-service = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
 thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
+thermal-service-relay = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
+uart-service = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
 zephyr = { version = "0.1.0", features = ["time-driver", "executor-zephyr"] }
 log = "0.4.22"
 
