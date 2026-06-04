@@ -56,6 +56,12 @@ async fn heartbeat() {
     }
 }
 
+// // UART service
+// #[embassy_executor::task]
+// async fn uart_service() {
+//     let uart: zephyr::device::uart = zephyr::devicetree::labels::arduino_serial::get_instance().unwrap()
+// }
+
 #[embassy_executor::task]
 async fn thermal_service() {
 
@@ -63,11 +69,9 @@ async fn thermal_service() {
     struct SensorEventHandler;
     static SENSOR_EVENT_SENDERS: StaticCell<[SensorEventHandler; 1]> = StaticCell::new();
     let sensor_event_senders = SENSOR_EVENT_SENDERS.init([SensorEventHandler]);
-    impl embedded_services::event::Sender<thermal_service_interface::sensor::Event> for SensorEventHandler {
-        async fn send(&mut self, event: thermal_service_interface::sensor::Event) {
+    impl embedded_services::event::NonBlockingSender<thermal_service_interface::sensor::Event> for SensorEventHandler {
+        fn try_send(&mut self, event: thermal_service_interface::sensor::Event) -> Option<()> {
             info!("Thermal event: {:?}", event);
-        }
-        fn try_send(&mut self, _event: thermal_service_interface::sensor::Event) -> Option<()> {
             Some(())
         }
     }
@@ -100,11 +104,9 @@ async fn thermal_service() {
     struct FanEventHandler;
     static FAN_EVENT_SENDERS: StaticCell<[FanEventHandler; 1]> = StaticCell::new();
     let fan_event_senders = FAN_EVENT_SENDERS.init([FanEventHandler]);
-    impl embedded_services::event::Sender<thermal_service_interface::fan::Event> for FanEventHandler {
-        async fn send(&mut self, event: thermal_service_interface::fan::Event) {
+    impl embedded_services::event::NonBlockingSender<thermal_service_interface::fan::Event> for FanEventHandler {
+        fn try_send(&mut self, event: thermal_service_interface::fan::Event) -> Option<()> {
             info!("Thermal event: {:?}", event);
-        }
-        fn try_send(&mut self, _event: thermal_service_interface::fan::Event) -> Option<()> {
             Some(())
         }
     }
