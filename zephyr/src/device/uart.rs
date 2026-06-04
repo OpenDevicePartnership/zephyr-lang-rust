@@ -102,7 +102,7 @@ impl UartStatic {
             tx_dma_buffer:   [const { UnsafeCell::new([0; TX_DMA_BUFFER_SIZE]) }; 1],
             tx_ringbuffer:  UnsafeCell::new(heapless::spsc::Queue::new()),
             tx_waker: embassy_sync::waitqueue::AtomicWaker::new(),
-            tx_running: core::sync::atomic::AtomicUsize::new(false),
+            tx_running: core::sync::atomic::AtomicBool::new(false),
         }
     }
 }
@@ -142,11 +142,13 @@ unsafe fn kick_tx(device: *const crate::raw::device, state: &UartStatic) {
         }
     }
 
+    const SYS_FOREVER_US: i32 = -1; // This is how Zephyr defines this macro. crate::raw doesn't create a constant for the macro though, so we have to define it here. u_Note: if we end up using more of these macros it might be good to set up a dedicated module for them somewhere just so we can keep them all in one place and easily cross-reference them with the Zephyr headers. Or, maybe just have the codegen generate these macros if that's possible
+
     // If any bytes were actually written, call uart_tx() to send them
     if bytes_written > 0 {
         if let Err(e) = crate::error::to_result_void(
             // If any bytes were written, call uart_tx() to send them off
-            crate::raw::uart_tx(device, slice.as_ptr(), bytes_written, /*timeout_us=*/ crate::raw::SYS_FOREVER_US as i32)
+            crate::raw::uart_tx(device, slice.as_ptr(), bytes_written, SYS_FOREVER_US)
         ) {
             match e.0 {
                 crate::raw::ENOTSUP => log::error!("uart_tx() returned -ENOTSUP: API is not enabled."),
@@ -410,11 +412,71 @@ impl embedded_io_async::Read for Uart {
             self.data.rx_waker.register(cx.waker()); // We have to register this waker before the final check (i.e., before we know if we will return core::task::Poll::Pending or not) because the ISR might place a byte in the empty buffer WHILE we are doing the check.
             match ringbuffer.dequeue() {
                 Some(byte) => {
-                    buf[0] = 1.into(); // placeholder
                     buf[0] = byte;
                     core::task::Poll::Ready(Ok(1))
                 }
                 None => core::task::Poll::Pending,
+            }
+        })
+        .await
+    }
+}
+
+impl embedded_io_async::Write for Uart {
+    async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
+        if buf.is_empty() {
+            return Ok(0);
+        }
+
+        let n = core::future::poll_fn(|cx| {
+            // SAFETY: exclusive access on the producer side
+            let ringbuffer = unsafe { &mut *self.data.tx_ringbuffer.get() };
+
+            // Enqueue as many bytes from `buf` as will fit.
+            // Basically just continuously move bytes from the user's `buf` into our ringbuffer until either our ringbuffer is completely full or the user's `buf` has been completely consumed.
+            let mut n = 0;
+            while n < buf.len() {
+                if ringbuffer.enqueue(buf[n]).is_err() { break; }
+                n += 1;
+            }
+            if n > 0 { return core::task::Poll::Ready(n); } // Return success, indicating how many bytes we enqueued. However, if we didn't enqueue any bytes (meaning the ringbuffer was full), fall through to the below case.
+
+            // If we get here, our ringbuffer was full so we couldn't enqueue anything. So, register the waker so that whenever there IS space to enqueue, this task gets woken up to finish its job.
+            self.data.tx_waker.register(cx.waker()); // We have to register this waker before the final check (i.e., before we know if we will return core::task::Poll::Pending or not) because the ISR might drain a byte from the full buffer WHILE we are doing the check.
+            match ringbuffer.enqueue(buf[0]) {
+                Ok(()) => core::task::Poll::Ready(1),
+                Err(_) => core::task::Poll::Pending,
+            }
+        })
+        .await;
+
+        // Kick the TX engine. No-op if the callback chain is already running; otherwise claims the engine and starts a uart_tx() with whatever we just enqueued.
+        // SAFETY: We're the entry point for kick_tx(). If there's already an active TX chain going, kick_tx() won't do anything and we can just wait for that chain to run its course.
+        unsafe { kick_tx(self.device, self.data); }
+
+        Ok(n)
+    }
+
+    async fn flush(&mut self) -> Result<(), Self::Error> {
+        core::future::poll_fn(|cx| {
+            use core::sync::atomic::Ordering;
+
+            // SAFETY: exclusive consumer-side access to the ringbuffer's "is empty" view via &mut self. 
+            // The callback, who's the producer of "empty" as we understand it, only changes len() downward (never upward).
+            let ringbuffer = unsafe { &*self.data.tx_ringbuffer.get() };
+
+            // If nothing's pending to be sent and tx_running is already false, then we're already flushed
+            if ringbuffer.len() == 0 && !self.data.tx_running.load(Ordering::Acquire) {
+                return core::task::Poll::Ready(Ok(()));
+            }
+
+            // We need to re-check before returning. So, do literally the exact same thing we do above, but
+            // register the waker first just in case a wake fires as we are actively doing the check
+            self.data.tx_waker.register(cx.waker());
+            if ringbuffer.len() == 0 && !self.data.tx_running.load(Ordering::Acquire) {
+                core::task::Poll::Ready(Ok(()))
+            } else {
+                core::task::Poll::Pending
             }
         })
         .await
