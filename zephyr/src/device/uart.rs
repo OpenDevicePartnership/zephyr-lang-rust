@@ -252,7 +252,6 @@ unsafe extern "C" fn uart_callback(_device: *const crate::raw::device, event: *m
 
             // Print out a warning if bytes were dropped.
             if dropped > 0 { log::warn!("Uart RX ringbuffer is full, dropped {} bytes.", dropped); }
-            // u_Note / u_TODO: Probably not a good idea to print inside an ISR callback?
 
             state.rx_waker.wake();
         }
@@ -285,8 +284,34 @@ unsafe extern "C" fn uart_callback(_device: *const crate::raw::device, event: *m
     }
 }
 
-/// UART Peripheral
-/// u_Note: eventually add more info to this comment (like devicetree config example(s) once that stuff is figured out)
+/// A UART peripheral.
+/// (This is a wrapper around the `struct device` in Zephyr that represents a UART controller. This driver utilizes Zephyr's async UART API.)
+/// 
+/// # Using This Struct From The Devicetree:
+/// 
+/// Unlike externally-wired devices (e.g. a sensor), a UART is usually
+/// an on-chip peripheral that is already declared in the board's `.dts` file with the
+/// vendor-specific compatible (`nxp,lpc-usart`, `nordic,nrf-uarte`, `raspberrypi,pico-uart`,
+/// etc.). So, you normally don't add a new devicetree node yourself to use this driver. You 
+/// should just be able to reference the one your board already provides by its label (e.g. `uart0`, `flexcomm0`, `usart1`).
+/// 
+/// For example, if my chip had a UART peripheral called `uart0` in the devicetree, I'd retrieve an instance of it like:
+/// ```rust
+/// let mut uart: zephyr::device::uart::Uart = zephyr::devicetree::labels::uart0::get_instance().unwrap();
+/// ```
+/// 
+/// You'll also want to enable serial and the Zephyr UART async API in your prj.conf:
+/// ```kconfig
+/// CONFIG_SERIAL=y
+/// CONFIG_UART_ASYNC_API=y
+/// ```
+/// 
+/// If needed, you can also disable Zephyr's UART logging if those messages would collide with your traffic:
+/// ```kconfig
+/// CONFIG_UART_CONSOLE=n
+/// CONFIG_LOG_BACKEND_UART=n
+/// ```
+/// 
 pub struct Uart {
     device: *const crate::raw::device,    // The underlying device itself.
     pub(crate) data: &'static UartStatic, // Our associated data, used for callbacks.
