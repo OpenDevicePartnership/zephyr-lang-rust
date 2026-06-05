@@ -54,6 +54,18 @@ async fn init(spawner: Spawner) {
     }
 }
 
+// Temperary debug UART that just sends a heartbeat u_Note: should get rid of this eventually
+#[embassy_executor::task]
+async fn debug_uart(spawner: Spawner) {
+    use embedded_io_async::Write as _;
+    let mut uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::flexcomm0::get_instance().unwrap();
+    loop {
+        let _ = uart_driver.write_all(b"HEARTBEAT\r\n").await;
+        let _ = uart_driver.flush().await;
+        Timer::after_secs(1).await;
+    }
+}
+
 // UART service. Spawns out the thermal, battery, and timer services.
 #[embassy_executor::task]
 async fn uart_service(spawner: Spawner) {
@@ -74,7 +86,9 @@ async fn uart_service(spawner: Spawner) {
 
     static UART_SERVICE: StaticCell<uart_service::DefaultService<RelayHandler>> = StaticCell::new();
     let uart_service = UART_SERVICE.init(uart_service::DefaultService::default_smbusespi(relay).unwrap());
-    let uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::arduino_serial::get_instance().unwrap();
+    let uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::flexcomm0::get_instance().unwrap();
+    info!("Starting uart_service::task::uart_service()...");
     let Err(e) = uart_service::task::uart_service(uart_service, uart_driver).await;
+    info!("After uart_service::task::uart_service()");
     log::error!("uart_service() encountered an error (Error: {:?})", e);
 }

@@ -5,6 +5,14 @@
  * Devicetree overlay for thermal-service sample on mimxrt685_evk
  */
 
+/ {
+	chosen {
+		/delete-property/ zephyr,console;
+		/delete-property/ zephyr,shell-uart;
+		/delete-property/ zephyr,uart-mcumgr;
+	};
+};
+
 &flexcomm2 {
 	ti_tmp11x: ti_tmp11x@48 {
 		compatible = "ti,tmp11x";

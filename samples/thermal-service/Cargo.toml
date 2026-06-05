@@ -28,8 +28,12 @@ thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/em
 thermal-service-relay = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
 uart-service = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
 zephyr = { version = "0.1.0", features = ["time-driver", "executor-zephyr"] }
-log = "0.4.22"
+log = { version = "0.4.22", features = ["max_level_error", "release_max_level_error"] } # 
+embedded-io-async = {version = "0.7.0"}
 
 [lints.clippy]
 needless_return = "allow"
+
+[lints.rust]
+unused = "allow" # u_Note: probably remove this eventually, not having it is just very annoying when debugging
 

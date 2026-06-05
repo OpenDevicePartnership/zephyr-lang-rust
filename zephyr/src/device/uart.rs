@@ -96,7 +96,7 @@ impl UartStatic {
     pub(crate) const fn new() -> Self {
         Self {
             rx_dma_buffer:   [const { UnsafeCell::new([0; RX_DMA_BUFFER_SIZE]) }; 2],
-            rx_next_dma_buffer:   core::sync::atomic::AtomicUsize::new(0),
+            rx_next_dma_buffer:   core::sync::atomic::AtomicUsize::new(1),
             rx_ringbuffer:  UnsafeCell::new(heapless::spsc::Queue::new()),
             rx_waker: embassy_sync::waitqueue::AtomicWaker::new(),
 
@@ -233,6 +233,7 @@ unsafe extern "C" fn uart_callback(_device: *const crate::raw::device, event: *m
 
         // Received data is ready for processing.
         crate::raw::uart_event_type_UART_RX_RDY => {
+
             // Bytes landed in one of the RX DMA buffers; drain into the ringbuffer.
             let rx = event.data.rx.as_ref();
             let slice = core::slice::from_raw_parts(rx.buf.add(rx.offset), rx.len);
@@ -388,6 +389,7 @@ impl embedded_io_async::ErrorType for Uart {
 
 impl embedded_io_async::Read for Uart {
     async fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error> {
+
         if buf.is_empty() {
             return Ok(0);
         }
@@ -425,6 +427,7 @@ impl embedded_io_async::Read for Uart {
 
 impl embedded_io_async::Write for Uart {
     async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
+
         if buf.is_empty() {
             return Ok(0);
         }
@@ -459,6 +462,7 @@ impl embedded_io_async::Write for Uart {
     }
 
     async fn flush(&mut self) -> Result<(), Self::Error> {
+
         core::future::poll_fn(|cx| {
             use core::sync::atomic::Ordering;
 
