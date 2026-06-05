@@ -394,7 +394,7 @@ impl embedded_io_async::Read for Uart {
             return Ok(0);
         }
 
-        core::future::poll_fn(|cx| {
+        let n = core::future::poll_fn(|cx| {
             // SAFETY: exclusive access on the consumer side, producer only touches it from the UART callback via enqueue().
             let ringbuffer = unsafe { &mut *self.data.rx_ringbuffer.get() };
 
@@ -421,12 +421,18 @@ impl embedded_io_async::Read for Uart {
                 None => core::task::Poll::Pending,
             }
         })
-        .await
+        .await;
+
+        if let Ok(n) = n { log::info!("read() -> {} bytes: {:02x?}", n, &buf[..n]); }
+
+        return n;
     }
 }
 
 impl embedded_io_async::Write for Uart {
     async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
+
+        log::info!("entered write()");
 
         if buf.is_empty() {
             return Ok(0);
@@ -462,6 +468,8 @@ impl embedded_io_async::Write for Uart {
     }
 
     async fn flush(&mut self) -> Result<(), Self::Error> {
+
+        log::info!("entered flush()");
 
         core::future::poll_fn(|cx| {
             use core::sync::atomic::Ordering;

@@ -28,8 +28,16 @@ thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/em
 thermal-service-relay = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
 uart-service = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
 zephyr = { version = "0.1.0", features = ["time-driver", "executor-zephyr"] }
-log = { version = "0.4.22", features = ["max_level_error", "release_max_level_error"] } # 
+log = { version = "0.4.22" } # features = ["max_level_error", "release_max_level_error"]
 embedded-io-async = {version = "0.7.0"}
+
+battery-service = { package = "battery-service", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
+battery-service-interface = { package = "battery-service-interface", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
+battery-service-relay = { package = "battery-service-relay", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
+
+time-alarm-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
+time-alarm-service-interface = { package = "time-alarm-service-interface", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
+time-alarm-service-relay = { package = "time-alarm-service-relay", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
 
 [lints.clippy]
 needless_return = "allow"
