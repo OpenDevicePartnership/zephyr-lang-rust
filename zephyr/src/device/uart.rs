@@ -1,5 +1,6 @@
 //! Rust wrapper for Zephyr UART driver.
-//! # u_Note: This driver uses Zephyr's async UART API, which
+
+// # u_Note: This driver uses Zephyr's async UART API, which requires DMA as far as I'm aware. Eventually, we'll probably want to add wrappers for the other non-async Zephyr UART drivers as well. It would probably be best to rename this to uart_async.rs or something similar, and create totally separate drivers for the other APIs.
 
 use core::cell::UnsafeCell;
 
@@ -394,7 +395,7 @@ impl embedded_io_async::Read for Uart {
             return Ok(0);
         }
 
-        let n = core::future::poll_fn(|cx| {
+        core::future::poll_fn(|cx| {
             // SAFETY: exclusive access on the consumer side, producer only touches it from the UART callback via enqueue().
             let ringbuffer = unsafe { &mut *self.data.rx_ringbuffer.get() };
 
@@ -421,18 +422,12 @@ impl embedded_io_async::Read for Uart {
                 None => core::task::Poll::Pending,
             }
         })
-        .await;
-
-        if let Ok(n) = n { log::info!("read() -> {} bytes: {:02x?}", n, &buf[..n]); }
-
-        return n;
+        .await
     }
 }
 
 impl embedded_io_async::Write for Uart {
     async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
-
-        log::info!("entered write()");
 
         if buf.is_empty() {
             return Ok(0);
@@ -468,8 +463,6 @@ impl embedded_io_async::Write for Uart {
     }
 
     async fn flush(&mut self) -> Result<(), Self::Error> {
-
-        log::info!("entered flush()");
 
         core::future::poll_fn(|cx| {
             use core::sync::atomic::Ordering;
