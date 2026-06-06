@@ -5,10 +5,11 @@
 
 use core::ffi::c_int;
 use embassy_executor::Spawner;
-use embassy_time::{Duration, Timer};
 use log::info;
 use static_cell::StaticCell;
-use odp_service_common::runnable_service::{Service, ServiceRunner};
+
+mod thermal;
+mod utils;
 
 // Entry point into the Rust program from Zephyr.
 #[unsafe(no_mangle)]
@@ -31,164 +32,44 @@ extern "C" fn rust_main() {
     static EXECUTOR_MAIN: StaticCell<zephyr::embassy::Executor> = StaticCell::new();
     let executor = EXECUTOR_MAIN.init(zephyr::embassy::Executor::new());
     executor.run(|spawner| {
-        spawner.spawn(main_task(spawner)).expect("Failed to spawn main_task");
+        spawner.spawn(init(spawner)).expect("Failed to spawn main_task");
     })
 }
 
 // Main embassy task to spawn all the child services.
 #[embassy_executor::task]
-async fn main_task(spawner: Spawner) {
+async fn init(spawner: Spawner) {
     // Initialize embedded_services.
     embedded_services::init().await;
     info!("Embedded services initialized");
 
+    // Initialize services
+    let thermal = crate::thermal::init(spawner).await;
+    // gonna put more here eventually
+    
     // Spawn all the different tasks.
-    spawner.spawn(heartbeat()).expect("Failed to spawn heartbeat()");
-    spawner.spawn(thermal_service()).expect("Failed to spawn thermal_service()");
+    spawner.spawn(uart_service(thermal)).expect("Failed to spawn uart_service()");
 }
 
-// Sends "heartbeat" every second.
+// UART service. Spawns out the thermal, battery, and timer services.
 #[embassy_executor::task]
-async fn heartbeat() {
-    loop {
-        info!("heartbeat");
-        Timer::after_secs(1).await;
-    }
-}
+async fn uart_service(thermal: crate::thermal::ThermalService) {
+    // Define RelayHandler for UART Service
+    embedded_services::relay::mctp::impl_odp_mctp_relay_handler!(
+        RelayHandler;
+        Thermal, 0x09, thermal_service_relay::ThermalServiceRelayHandler<crate::thermal::ThermalService>;
+    );
 
-#[embassy_executor::task]
-async fn thermal_service() {
+    // Create relay handler for the above services
+    let relay = RelayHandler::new(
+        thermal_service_relay::ThermalServiceRelayHandler::new(thermal),
+    );
 
-    // Sensor event handler
-    struct SensorEventHandler;
-    static SENSOR_EVENT_SENDERS: StaticCell<[SensorEventHandler; 1]> = StaticCell::new();
-    let sensor_event_senders = SENSOR_EVENT_SENDERS.init([SensorEventHandler]);
-    impl embedded_services::event::Sender<thermal_service_interface::sensor::Event> for SensorEventHandler {
-        async fn send(&mut self, event: thermal_service_interface::sensor::Event) {
-            info!("Thermal event: {:?}", event);
-        }
-        fn try_send(&mut self, _event: thermal_service_interface::sensor::Event) -> Option<()> {
-            Some(())
-        }
-    }
-
-    // Static storage for the sensor service resources
-    static SENSOR_RESOURCES: StaticCell<thermal_service::sensor::Resources<tmp11x::Sensor, 16>> = StaticCell::new();
-    let sensor_resources = SENSOR_RESOURCES.init(thermal_service::sensor::Resources::default());
-
-    // Initialize sensor runner.
-    let (sensor_service, sensor_runner) = thermal_service::sensor::Service::<tmp11x::Sensor, SensorEventHandler, 16>::new(
-        sensor_resources,                                   // Resources used by the temperature sensor
-
-        // Thermal service init params.
-        thermal_service::sensor::InitParams {
-            driver: tmp11x::Sensor::new(),                         // The TMP11x temperature sensor driver
-            event_senders: sensor_event_senders.as_mut_slice(),    // List of event senders
-
-            // Thermal service sensor config
-            config: thermal_service::sensor::Config {
-                sample_period: Duration::from_secs(2),      // Rate at which to sample the sensor when operating in normal conditions
-                fast_sample_period: Duration::from_secs(2), // Rate at which to sample the sensor when operating in fast conditions
-                ..Default::default()
-            },
-        },
-    )
-    .await
-    .expect("ERROR: Failed to initialize sensor service");
-
-    // Fan event handler
-    struct FanEventHandler;
-    static FAN_EVENT_SENDERS: StaticCell<[FanEventHandler; 1]> = StaticCell::new();
-    let fan_event_senders = FAN_EVENT_SENDERS.init([FanEventHandler]);
-    impl embedded_services::event::Sender<thermal_service_interface::fan::Event> for FanEventHandler {
-        async fn send(&mut self, event: thermal_service_interface::fan::Event) {
-            info!("Thermal event: {:?}", event);
-        }
-        fn try_send(&mut self, _event: thermal_service_interface::fan::Event) -> Option<()> {
-            Some(())
-        }
-    }
-
-    // Static storage for the fan runner resources
-    static FAN_RESOURCES: StaticCell<thermal_service::fan::Resources<zephyr::device::pwm_fan::PwmFan, 16>> = StaticCell::new();
-    let fan_resources = FAN_RESOURCES.init(thermal_service::fan::Resources::default());
-
-    // Initialize fan runner, using sensor_service.
-    let (fan_service, fan_runner) = thermal_service::fan::Service::<
-        zephyr::device::pwm_fan::PwmFan,
-        thermal_service::sensor::Service<tmp11x::Sensor, SensorEventHandler, 16>,
-        FanEventHandler,
-        16
-    >::new(
-        fan_resources,
-
-        // Fan service init params.
-        thermal_service::fan::InitParams {
-            driver: zephyr::devicetree::labels::fan0::get_instance().unwrap(),
-            event_senders: fan_event_senders.as_mut_slice(),
-            sensor_service,
-
-            // Thermal service fan config
-            config: thermal_service::fan::Config {
-                ..Default::default()
-            },
-        },
-    )
-    .await
-    .expect("ERROR: Failed to initialize fan service.");
-
-    // Fan service settings
-    {
-        use thermal_service_interface::fan::FanService;
-        fan_service.enable_auto_control().await.expect("ERROR: Failed to call fan_service.enable_auto_control().");
-        fan_service.set_state_temp(thermal_service_interface::fan::OnState::Min, 21.0).await;
-        fan_service.set_state_temp(thermal_service_interface::fan::OnState::Ramping, 22.0).await;
-        fan_service.set_state_temp(thermal_service_interface::fan::OnState::Max, 25.0).await;
-    }
-
-    // Start the services
-    info!("Starting thermal_service() runners.");
-    embassy_futures::join::join(
-        sensor_runner.run(),
-        fan_runner.run(),
-    ).await;
-}
-
-mod tmp11x {
-    pub use embedded_sensors_hal_async::temperature::DegreesCelsius;
-    use log::info;
-
-    // Wrapper around the Zephyr TMP11x temperature sensor with implementations for the generic embedded_sensors_hal_async::temperature::TemperatureSensor trait.
-    pub struct Sensor(zephyr::device::temperature_sensor::TemperatureSensor);
-    impl Sensor {
-        pub fn new() -> Self {
-            Self(zephyr::devicetree::labels::ti_tmp11x::get_instance().unwrap())
-        }
-    }
-    impl thermal_service_interface::sensor::Driver for Sensor {} // Marker trait so Sensor can be used with thermal_service.
-
-    // Error type.
-    impl embedded_sensors_hal_async::sensor::ErrorType for Sensor {
-        type Error = embedded_sensors_hal_async::sensor::ErrorKind;
-    }
-
-    // Returns a temperature sample in degrees Celsius.
-    impl embedded_sensors_hal_async::temperature::TemperatureSensor for Sensor {
-        async fn temperature(&mut self) -> Result<DegreesCelsius, Self::Error> {
-            let Self(sensor) = self;
-            match sensor.read_ambient_temperature() {
-                Ok(temperature) => {
-                    info!("Temperature read out success");
-                    info!("    {}.{} Celsius", temperature.val1, temperature.val2);
-                    let temperature: f32 = temperature.val1 as f32 + (temperature.val2 as f32) / 1_000_000.0;
-                    Ok(temperature)
-                }
-                Err(e) => {
-                    info!("Temperature read out failed {}", e);
-                    let temperature: DegreesCelsius = 42.0;
-                    Ok(temperature)
-                }
-            }
-        }
-    }
+    static UART_SERVICE: StaticCell<uart_service::DefaultService<RelayHandler>> = StaticCell::new();
+    let uart_service = UART_SERVICE.init(uart_service::DefaultService::default_smbusespi(relay).unwrap());
+    let uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::flexcomm0::get_instance().unwrap();
+    info!("Starting uart_service::task::uart_service()...");
+    let Err(e) = uart_service::task::uart_service(uart_service, uart_driver).await;
+    info!("After uart_service::task::uart_service()");
+    log::error!("uart_service() encountered an error (Error: {:?})", e);
 }

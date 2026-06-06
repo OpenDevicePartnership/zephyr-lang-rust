@@ -4,4 +4,5 @@
 # On Windows, this symlink will just get checked out as a regular file and will have to be replaced
 # with a copy (or real symlinks enabled).  But, this shouldn't affect CI runs of the documentation,
 # which are done on Linux.
+#
 !.cargo/

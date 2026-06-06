@@ -30,6 +30,11 @@ arrayvec = { version = "0.7.6", default-features = false }
 embedded-fans-async = {version = "0.2.0"}
 thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services"}
 
+# Imports for uart.rs:
+embedded-io-async = {version = "0.7.0"}
+uart-service = { git = "https://github.com/OpenDevicePartnership/embedded-services"}
+heapless = "0.8"
+
 [dependencies.fugit]
 version = "0.3.7"
 
