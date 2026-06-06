@@ -5,7 +5,6 @@
 
 use core::ffi::c_int;
 use embassy_executor::Spawner;
-use embassy_time::Timer;
 use log::info;
 use static_cell::StaticCell;
 
@@ -43,41 +42,23 @@ async fn init(spawner: Spawner) {
     // Initialize embedded_services.
     embedded_services::init().await;
     info!("Embedded services initialized");
+
+    // Initialize services
+    let thermal = crate::thermal::init(spawner).await;
+    // gonna put more here eventually
     
     // Spawn all the different tasks.
-    spawner.spawn(uart_service(spawner)).expect("Failed to spawn uart_service()");
-
-    // HEARTBEAT
-    loop {
-        info!("heartbeat");
-        Timer::after_secs(1).await;
-    }
-}
-
-// Temperary debug UART that just sends a heartbeat u_Note: should get rid of this eventually
-#[embassy_executor::task]
-async fn debug_uart(spawner: Spawner) {
-    use embedded_io_async::Write as _;
-    let mut uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::flexcomm0::get_instance().unwrap();
-    loop {
-        let _ = uart_driver.write_all(b"HEARTBEAT\r\n").await;
-        let _ = uart_driver.flush().await;
-        Timer::after_secs(1).await;
-    }
+    spawner.spawn(uart_service(thermal)).expect("Failed to spawn uart_service()");
 }
 
 // UART service. Spawns out the thermal, battery, and timer services.
 #[embassy_executor::task]
-async fn uart_service(spawner: Spawner) {
+async fn uart_service(thermal: crate::thermal::ThermalService) {
     // Define RelayHandler for UART Service
     embedded_services::relay::mctp::impl_odp_mctp_relay_handler!(
         RelayHandler;
         Thermal, 0x09, thermal_service_relay::ThermalServiceRelayHandler<crate::thermal::ThermalService>;
     );
-
-    // Initialize services
-    let thermal = crate::thermal::init(spawner).await;
-    // gonna put more here eventually
 
     // Create relay handler for the above services
     let relay = RelayHandler::new(

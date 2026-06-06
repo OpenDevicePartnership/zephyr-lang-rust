@@ -5,5 +5,4 @@
 # with a copy (or real symlinks enabled).  But, this shouldn't affect CI runs of the documentation,
 # which are done on Linux.
 #
-.cargo/
-# u_Note: I've removed the `!` since I don't want git to track my .cargo. Probably remove this once PoC is finished
+!.cargo/

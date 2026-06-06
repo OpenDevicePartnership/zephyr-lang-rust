@@ -7,6 +7,7 @@ type SensorService = thermal_service::sensor::Service<'static, tmp11x::Sensor, S
 type FanService = thermal_service::fan::Service<'static, zephyr::device::pwm_fan::PwmFan, SensorService, FanEventSender, 16>;
 pub type ThermalService = thermal_service::Service<'static, SensorService, FanService>;
 
+#[allow(clippy::needless_return)]
 pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
     embedded_services::info!("Initializing thermal service...");
 
