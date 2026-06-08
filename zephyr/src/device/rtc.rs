@@ -33,31 +33,27 @@ fn to_datetime(rtc_time: &crate::raw::rtc_time) -> Result<embedded_mcu_hal::time
 }
 
 // Helper to convert embedded_mcu_hal::time::Datetime to zephyr::raw::rtc_time
-fn to_rtctime(datetime: &embedded_mcu_hal::time::Datetime) -> Result<crate::raw::rtc_time, embedded_mcu_hal::time::DatetimeError> {
-    use embedded_mcu_hal::time::DatetimeError;
-    use crate::raw::rtc_time;
-
-    Ok(rtc_time {
-        tm_sec: i32::try_from(datetime.second()).map_err(|_| DatetimeError::Second)?,
-        tm_min: i32::try_from(datetime.minute()).map_err(|_| DatetimeError::Minute)?,
-        tm_hour: i32::try_from(datetime.hour()).map_err(|_| DatetimeError::Hour)?,
-        tm_mday: i32::try_from(datetime.day()).map_err(|_| DatetimeError::Day)?,
-        tm_nsec: i32::try_from(datetime.nanoseconds()).map_err(|_| DatetimeError::Nanosecond)?,
+fn to_rtctime(datetime: &embedded_mcu_hal::time::Datetime) -> crate::raw::rtc_time {
+    // We don't have to handle any potential errors here, since `Datetime` is already the validated form.
+    // Basically, it's impossible for any of these casts to fail.
+    crate::raw::rtc_time {
+        tm_sec: datetime.second() as i32,
+        tm_min: datetime.minute() as i32,
+        tm_hour: datetime.hour() as i32,
+        tm_mday: datetime.day() as i32,
+        tm_nsec: datetime.nanoseconds() as i32,
 
         // tm_mon is kind of annoying, since we first have to convert it from `Month` to u8, and then to i32
-        tm_mon: i32::try_from(
-            // When converting to u8, we subtract `1` from the value since rtc_time represents months as 0-11 while Datetime represents them as 1-12.
-            (u8::try_from(datetime.month()).map_err(|_| DatetimeError::Month)?) - 1
-        ).map_err(|_| DatetimeError::Month)?,
+        tm_mon: (u8::from(datetime.month()) - 1) as i32,
 
         // For year, we have to subtract 1900 since rtc_time represents tm_year as `Year - 1900` (and Datetime represents them normally)
-        tm_year: i32::try_from(datetime.year() - 1900).map_err(|_| DatetimeError::Year)?,
+        tm_year: datetime.year() as i32 - 1900,
 
         // The rest of these don't exist in `Datetime`, so we set them to -1 (which means "Unknown" in the context of the `rtc_time` struct)
         tm_wday: -1,
         tm_yday: -1,
         tm_isdst: -1,
-    })
+    }
 }
 
 impl Rtc {
