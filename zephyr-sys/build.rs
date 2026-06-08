@@ -122,7 +122,6 @@ fn main() -> anyhow::Result<()> {
         .allowlist_item_if("PWM_.*", || options.contains("CONFIG_PWM"))
         .allowlist_function_if("pwm_.*", || options.contains("CONFIG_PWM"))
         // RTC stuff for ODP integration
-        // RTC
         .allowlist_item_if("CONFIG_RTC_.*", || options.contains("CONFIG_RTC"))
         .allowlist_item_if("RTC_.*",        || options.contains("CONFIG_RTC"))
         .allowlist_function_if("rtc_.*",    || options.contains("CONFIG_RTC"))
