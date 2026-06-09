@@ -28,4 +28,10 @@
 		min-rpm = <0>;
 		min-start-rpm = <3000>;
 	};
+
+	rtc_emul: rtc_emul {
+        compatible = "zephyr,rtc-emul";
+        status = "okay";
+		rs,resolution-hz = <1>;
+    };
 };

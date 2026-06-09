@@ -175,14 +175,14 @@
   rules:
     - !Compatible
       names:
-        - "maxim,ds3231-rtc" # u_Note: placeholder
+        - "zephyr,rtc-emul"
       level: 0
   actions:
     - !Instance
       raw: !Myself
       device: crate::device::rtc::Rtc
       properties:
-        - name: resolution-hz # The resolution of this RTC in Hz. This value represents the finest time granularity the hardware can store.
+        - name: rs,resolution-hz # The resolution of this RTC in Hz. This value represents the finest time granularity the hardware can store.
           type: Int
 
 # Generate a pseudo node that matches all of the labels across the tree with their nodes.
