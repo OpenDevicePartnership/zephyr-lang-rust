@@ -12,9 +12,8 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
     embedded_services::info!("Initializing thermal service...");
 
     // Create and spawn sensor service
-    let sensor_service = crate::utils::spawn_service!(
-        spawner,
-        SensorService,
+    let sensor_service = crate::utils::spawn_service!(spawner, SensorService, |resources| thermal_service::sensor::Service::new(
+        resources,
         thermal_service::sensor::InitParams {
             driver: tmp11x::Sensor::new(),                         // The TMP11x temperature sensor driver
             event_senders: &mut [],    // List of event senders
@@ -25,26 +24,29 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
                 fast_sample_period: embassy_time::Duration::from_secs(2), // Rate at which to sample the sensor when operating in fast conditions
                 ..Default::default()
             },
-        }
-    )
+        },
+    ))
     .expect("Failed to spawn sensor_service.");
 
     // Create and spawn fan service
     let fan_service = crate::utils::spawn_service!(
         spawner,
         FanService,
-        thermal_service::fan::InitParams {
-            driver: zephyr::devicetree::labels::fan0::get_instance().unwrap(),
-            sensor_service,
-            event_senders: &mut [],
-            config: thermal_service::fan::Config {
-                auto_control: true,
-                min_temp: 21.0,
-                ramp_temp: 22.0,
-                max_temp: 25.0,
-                ..Default::default()
+        |resources| thermal_service::fan::Service::new(
+            resources,
+            thermal_service::fan::InitParams {
+                driver: zephyr::devicetree::labels::fan0::get_instance().unwrap(),
+                sensor_service,
+                event_senders: &mut [],
+                config: thermal_service::fan::Config {
+                    auto_control: true,
+                    min_temp: 21.0,
+                    ramp_temp: 22.0,
+                    max_temp: 25.0,
+                    ..Default::default()
+                },
             },
-        }
+        )
     )
     .expect("Failed to spawn fan service");
 

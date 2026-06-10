@@ -20,24 +20,24 @@ embassy-futures = "0.1.1"
 embassy-sync = "0.8"
 embassy-time = { version = "0.5", features = ["tick-hz-10_000"] } # u_Note: tick-hz-10_000 is needed to match with zephyr. If this isn't here, something like Timer::after_secs(1) would actually wait for 100 seconds instead of 1 seconds. There should probably be some kind of way to do this manually so the embassy APIs work no matter what the Zephyr tick rate is.
 embedded-sensors-hal-async = "0.3.0"
-embedded-services = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
-odp-service-common = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
+embedded-services = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+odp-service-common = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
 static_cell = "2.1"
-thermal-service = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
-thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
-thermal-service-relay = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
-uart-service = { git = "https://github.com/OpenDevicePartnership/embedded-services" }
+thermal-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+thermal-service-relay = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+uart-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
 zephyr = { version = "0.1.0", features = ["time-driver", "executor-zephyr"] }
 log = { version = "0.4.22" } # features = ["max_level_error", "release_max_level_error"]
 embedded-io-async = {version = "0.7.0"}
 
-battery-service = { package = "battery-service", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
-battery-service-interface = { package = "battery-service-interface", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
-battery-service-relay = { package = "battery-service-relay", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
+battery-service = { package = "battery-service", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+battery-service-interface = { package = "battery-service-interface", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+battery-service-relay = { package = "battery-service-relay", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
 
-time-alarm-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
-time-alarm-service-interface = { package = "time-alarm-service-interface", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
-time-alarm-service-relay = { package = "time-alarm-service-relay", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main"}
+time-alarm-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main", features = ["mock"]}
+time-alarm-service-interface = { package = "time-alarm-service-interface", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+time-alarm-service-relay = { package = "time-alarm-service-relay", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
 
 [lints.clippy]
 perf = { level = "forbid" }
