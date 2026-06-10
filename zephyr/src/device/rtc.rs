@@ -117,7 +117,13 @@ impl Rtc {
     ) -> Option<Rtc> {
         // Make sure this instance doesn't already exist.
         if !unique.once() { return None; }
-        Some(Rtc { device, resolution_hz })
+        let mut rtc = Rtc { device, resolution_hz };
+
+        // Default Rtc time to January 1st, 1970.
+        use embedded_mcu_hal::time::DatetimeClock;
+        rtc.set(embedded_mcu_hal::time::Datetime::default()).ok()?;
+
+        Some(rtc)
     }
 }
 

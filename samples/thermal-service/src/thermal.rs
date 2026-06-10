@@ -35,7 +35,7 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
         |resources| thermal_service::fan::Service::new(
             resources,
             thermal_service::fan::InitParams {
-                driver: zephyr::devicetree::labels::fan0::get_instance().unwrap(),
+                driver: zephyr::devicetree::labels::fan0::get_instance().expect("Failed to call zephyr::devicetree::labels::fan0::get_instance"),
                 sensor_service,
                 event_senders: &mut [],
                 config: thermal_service::fan::Config {
@@ -72,7 +72,7 @@ mod tmp11x {
     pub struct Sensor(zephyr::device::temperature_sensor::TemperatureSensor);
     impl Sensor {
         pub fn new() -> Self {
-            Self(zephyr::devicetree::labels::ti_tmp11x::get_instance().unwrap())
+            Self(zephyr::devicetree::labels::ti_tmp11x::get_instance().expect("Failed to call zephyr::devicetree::labels::ti_tmp11x::get_instance()"))
         }
     }
     impl thermal_service_interface::sensor::Driver for Sensor {} // Marker trait so Sensor can be used with thermal_service.
