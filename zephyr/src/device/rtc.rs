@@ -4,7 +4,7 @@ use log::error;
 
 /// Super thin wrapper providing a 1:1 translation of Zephyr's RTC API to
 /// Rust, without any extra abstractions on top.
-pub(crate) struct RtcRaw {
+pub struct RtcRaw {
     device: *const crate::raw::device,
 }
 
@@ -22,7 +22,7 @@ impl RtcRaw {
     /// Returns the same as rtc_get_time():
     /// - ENODATA if RTC time has not been set
     /// - Generic Zephyr errno code if failure
-    fn get_time(&self) -> Result<crate::raw::rtc_time, u32> {
+    fn get_time(&self) -> crate::error::Result<crate::raw::rtc_time> {
         let mut buffer = core::mem::MaybeUninit::<crate::raw::rtc_time>::uninit();
 
         crate::error::to_result_void(
@@ -31,10 +31,22 @@ impl RtcRaw {
             //            This memory area is local to get_time(), so it will live as long as rtc_get_time() is using it.
             //            In other words, by the time `buffer` goes out of scope, rtc_get_time() will have already returned.
             unsafe { crate::raw::rtc_get_time(self.device, buffer.as_mut_ptr()) }
-        ).map_err(|_| {1 as u32})?; // u_NOte: fix this later
+        )?;
 
         // SAFETY: If we get here, `buffer` is gaurunteed to be successfully initialized.
         Ok(unsafe { buffer.assume_init() })
+    }
+
+    /// Helper wrapper method for rtc_set_time()
+    /// Returns the same as rtc_set_time():
+    /// - EINVAL if RTC time is invalid or exceeds hardware capabilities
+    /// - Generic Zephyr errno code if failure
+    fn set_time(&self, rtc_time: &crate::raw::rtc_time) -> crate::error::Result<()> {
+        crate::error::to_result_void(
+            // SAFETY: - `self.device` lives for the entire duration of `self`.
+            //         - `rtc_time` is a valid reference that lives for this call.
+            unsafe { crate::raw::rtc_set_time(self.device, rtc_time as *const _) }
+        )
     }
 }
 
@@ -109,29 +121,47 @@ impl Rtc {
     }
 }
 
-// impl embedded_mcu_hal::time::DatetimeClock for Rtc {
-//     // Reads the current date and time from the hardware clock.
-//     fn now(&self) -> Result<embedded_mcu_hal::time::Datetime, embedded_mcu_hal::time::DatetimeClockError> {
-//         use core::mem::MaybeUninit;
-//         use embedded_mcu_hal::time::DatetimeClockError;
+impl embedded_mcu_hal::time::DatetimeClock for Rtc {
+    // Reads the current date and time from the hardware clock.
+    fn now(&self) -> Result<embedded_mcu_hal::time::Datetime, embedded_mcu_hal::time::DatetimeClockError> {
+        use embedded_mcu_hal::time::DatetimeClockError;
 
-//         // Get the current RTC time from Zephyr.
-//         let rtc_time: crate::raw::rtc_time = match self.device.get_time() {
-//             Ok(rtc_time) => rtc_time,
-            
-//             Err(crate::raw::ENODATA) => { error!("Failure in Rtc::now(): self.device.get_time() returned -ENODATA (RTC time has not been set)."); return Err(DatetimeClockError::Unknown); }
-//             Err(unknown) =>             { error!("Failure in Rtc::now(): self.device.get_time() returned Zephyr errno {}.", unknown);             return Err(DatetimeClockError::Unknown); }
-//         };
+        // Get the current RTC time from Zephyr.
+        let rtc_time: crate::raw::rtc_time = match self.device.get_time() {
+            Ok(rtc_time) => rtc_time,
+            Err(e) if e.0 == crate::raw::ENODATA => { error!("Rtc::now(): RTC time has not been set");             return Err(DatetimeClockError::Unknown); }
+            Err(e) =>                               { error!("Rtc::now(): rtc_get_time() returned errno {}", e.0); return Err(DatetimeClockError::Unknown); }
+        };
         
-//         // Convert this RTC data into the embedded_mcu_hal::Datetime format.
-//         let datetime: embedded_mcu_hal::time::Datetime = match to_datetime(&rtc_time) {
-//             Ok(datetime) => datetime,
-//             Err(err) => {
-//                 error!("Failure in Rtc::now(): to_datetime() returned with error {:?}. There may have been an issue converting Zephyr's RTC data into the embedded_mcu_hal::Datetime format.", err);
-//                 return Err(DatetimeClockError::Unknown);
-//             }
-//         };
+        // Convert this RTC data into the embedded_mcu_hal::Datetime format.
+        let datetime: embedded_mcu_hal::time::Datetime = match to_datetime(&rtc_time) {
+            Ok(datetime) => datetime,
+            Err(err) => {
+                error!("Failure in Rtc::now(): to_datetime() returned with error {:?}. There may have been an issue converting Zephyr's RTC data into the embedded_mcu_hal::Datetime format.", err);
+                return Err(DatetimeClockError::Unknown);
+            }
+        };
 
-//         Ok(datetime)
-//     }
-// }
+        Ok(datetime)
+    }
+
+    // Sets the hardware clock to the given date and time.
+    fn set(&mut self, datetime: embedded_mcu_hal::time::Datetime) -> Result<(), embedded_mcu_hal::time::DatetimeClockError> {
+        use embedded_mcu_hal::time::DatetimeClockError;
+
+        // Convert the provided Datetime into an rtc_time for Zephyr.
+        let rtc_time: crate::raw::rtc_time = to_rtctime(&datetime);
+
+        // Set the RTC time.
+        match self.device.set_time(&rtc_time) {
+            Ok(()) => Ok(()),
+            Err(e) if e.0 == crate::raw::EINVAL => { error!("Rtc::set(): RTC time is invalid or exceeds hardware capabilities"); Err(DatetimeClockError::Unknown) }
+            Err(e) =>                              { error!("Rtc::set(): rtc_set_time() returned errno {}", e.0);                Err(DatetimeClockError::Unknown) }
+        }
+    }
+
+    // Returns the resolution of this RTC is Hz.
+    fn resolution_hz(&self) -> u32 {
+        return self.resolution_hz;
+    }
+}
