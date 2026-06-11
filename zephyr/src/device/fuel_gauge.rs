@@ -52,7 +52,12 @@ pub(crate) enum FuelGaugeProp {
     StateOfHealth = crate::raw::fuel_gauge_prop_type_FUEL_GAUGE_STATE_OF_HEALTH,
 }
 
-
+#[repr(u32)]
+pub(crate) enum FuelGaugeBufferProp {
+    ManufacturerName = crate::raw::fuel_gauge_prop_type_FUEL_GAUGE_MANUFACTURER_NAME,
+    DeviceName = crate::raw::fuel_gauge_prop_type_FUEL_GAUGE_DEVICE_NAME,
+    DeviceChemistry = crate::raw::fuel_gauge_prop_type_FUEL_GAUGE_DEVICE_CHEMISTRY,
+}
 
 impl FuelGauge {
     /// Constructor, used by the devicetree generated code.
@@ -92,9 +97,59 @@ impl FuelGauge {
         )
     }
 
+    /// Private helper function to get a fuel gauge buffer prop value.
+    pub(crate) fn get_buffer_prop(&self, prop: FuelGaugeBufferProp, buffer: &mut [u8]) -> crate::error::Result<()> {
+        crate::error::to_result_void(
+            // SAFETY: - `self.device` lives for the entire duration of `self`.
+            //         - `prop` is a copy owned by this function.
+            //         - `buffer.as_mut_ptr()` is a valid pointer to a writable memory region
+            //           of at least `buffer.len()` bytes that lives for the duration of this call.
+            //         - The caller is responsible for passing a buffer of the correct size
+            //           for the requested property.
+            unsafe {
+                crate::raw::fuel_gauge_get_buffer_prop(
+                    self.device,
+                    prop as u16,
+                    buffer.as_mut_ptr() as *mut core::ffi::c_void,
+                    buffer.len(),
+                )
+            }
+        )
+    }
+
     // u_TODO: Will probably want to make these function comments more descriptive in the future.
     //         Zephyr has docs for `enum fuel_gauge_prop_type`, where each of the enums has a comment
     //         about the units being returned + any extra info.
+
+    /// The size of the manufacturer name, in bytes.
+    /// According to Zephyr, manufacturer name is 1 byte of string length + 20 bytes of data.
+    pub const MANUFACTURER_NAME_SIZE: usize = 21;
+    /// Returns the gauge's `manufacturer_name` reading.
+    pub fn manufacturer_name(&self) -> crate::error::Result<[u8; Self::MANUFACTURER_NAME_SIZE]> {
+        let mut buffer = [0u8; Self::MANUFACTURER_NAME_SIZE];
+        self.get_buffer_prop(FuelGaugeBufferProp::ManufacturerName, &mut buffer)?;
+        Ok(buffer)
+    }
+
+    /// The size of the device name, in bytes.
+    /// According to Zephyr, device name is 1 byte of string length + 20 bytes of data.
+    pub const DEVICE_NAME_SIZE: usize = 21;
+    /// Returns the gauge's `device_name` reading.
+    pub fn device_name(&self) -> crate::error::Result<[u8; Self::DEVICE_NAME_SIZE]> {
+        let mut buffer = [0u8; Self::DEVICE_NAME_SIZE];
+        self.get_buffer_prop(FuelGaugeBufferProp::DeviceName, &mut buffer)?;
+        Ok(buffer)
+    }
+
+    /// The size of the device chemistry, in bytes.
+    /// According to Zephyr, device chemistry is 1 byte of string length + 4 bytes of data.
+    pub const DEVICE_CHEMISTRY_SIZE: usize = 5;
+    /// Returns the gauge's `device_chemistry` reading.
+    pub fn device_chemistry(&self) -> crate::error::Result<[u8; Self::DEVICE_CHEMISTRY_SIZE]> {
+        let mut buffer = [0u8; Self::DEVICE_CHEMISTRY_SIZE];
+        self.get_buffer_prop(FuelGaugeBufferProp::DeviceChemistry, &mut buffer)?;
+        Ok(buffer)
+    }
 
     /// Returns the gauge's `avg_current` reading.
     pub fn avg_current(&self) -> crate::error::Result<i32> {
