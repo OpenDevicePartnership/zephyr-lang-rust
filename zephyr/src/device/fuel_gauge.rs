@@ -447,3 +447,27 @@ impl FuelGauge {
         self.get_prop(FuelGaugeProp::StateOfHealth).map(|val| unsafe { *val.state_of_health.as_ref() })
     }
 }
+
+use embedded_batteries_async::smart_battery::{BatteryModeFields, CapacityModeValue};
+impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
+
+    async fn battery_mode(&mut self) -> Result<BatteryModeFields, Self::Error> {
+        Ok(BatteryModeFields::from_bits(self.sbs_mode()?))
+    }
+
+    async fn remaining_capacity_alarm(&mut self) -> Result<CapacityModeValue, Self::Error> {
+        let value = self.sbs_remaining_capacity_alarm()?; // Returned in either mAh or 10mWh depending on the capacity_mode, according to Zephyr docs.
+        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+
+        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate.
+        // When false, the capacity information should be reported in mA or mAh as appropriate.
+        match capacity_mode {
+            true => Ok(CapacityModeValue::CentiWattUnsigned(value)), // centiwatt == 10mW
+            false => Ok(CapacityModeValue::MilliAmpUnsigned(value)),
+        }
+    }
+}
+
+impl embedded_batteries_async::smart_battery::ErrorType for FuelGauge {
+    type Error = crate::error::Error;
+}
