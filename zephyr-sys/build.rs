@@ -130,6 +130,7 @@ fn main() -> anyhow::Result<()> {
         .allowlist_item_if("FUEL_GAUGE_.*",        || options.contains("CONFIG_FUEL_GAUGE"))
         .allowlist_item_if("fuel_gauge_prop_type", || options.contains("CONFIG_FUEL_GAUGE"))
         .allowlist_function_if("fuel_gauge_.*",    || options.contains("CONFIG_FUEL_GAUGE"))
+        .allowlist_item_if("SBS_GAUGE_.*", || options.contains("CONFIG_FUEL_GAUGE"))
         // Generate
         .generate()
         .expect("Unable to generate bindings");
