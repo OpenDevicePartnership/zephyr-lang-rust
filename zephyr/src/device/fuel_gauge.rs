@@ -198,6 +198,17 @@ impl FuelGauge {
         self.get_prop(FuelGaugeProp::SbsMode).map(|val| unsafe { *val.sbs_mode.as_ref() })
     }
 
+    /// Sets the gauge's `sbs_mode` setting.
+    pub fn set_sbs_mode(&self, value: u16) -> crate::error::Result<()> {
+        // SAFETY: All union fields are primitive types, so zeroed memory is valid.
+        let mut val: crate::raw::fuel_gauge_prop_val = unsafe { core::mem::zeroed() };
+        
+        // SAFETY: Writing to the correct union field for this property.
+        unsafe { *val.sbs_mode.as_mut() = value; }
+        
+        self.set_prop(FuelGaugeProp::SbsMode, val)
+    }
+
     /// Returns the gauge's `chg_current` (charge current) reading.
     pub fn chg_current(&self) -> crate::error::Result<u32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
@@ -234,6 +245,17 @@ impl FuelGauge {
         self.get_prop(FuelGaugeProp::SbsAtRate).map(|val| unsafe { *val.sbs_at_rate.as_ref() })
     }
 
+    /// Sets the gauge's `at_rate` setting.
+    pub fn set_sbs_at_rate(&self, value: i16) -> crate::error::Result<()> {
+        // SAFETY: All union fields are primitive types, so zeroed memory is valid.
+        let mut val: crate::raw::fuel_gauge_prop_val = unsafe { core::mem::zeroed() };
+        
+        // SAFETY: Writing to the correct union field for this property.
+        unsafe { *val.sbs_at_rate.as_mut() = value; }
+        
+        self.set_prop(FuelGaugeProp::SbsAtRate, val)
+    }
+
     /// Returns the gauge's `sbs_at_rate_time_to_full` reading.
     pub fn sbs_at_rate_time_to_full(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
@@ -258,10 +280,32 @@ impl FuelGauge {
         self.get_prop(FuelGaugeProp::SbsRemainingCapacityAlarm).map(|val| unsafe { *val.sbs_remaining_capacity_alarm.as_ref() })
     }
 
+    /// Sets the gauge's `sbs_remaining_capacity_alarm` setting.
+    pub fn set_sbs_remaining_capacity_alarm(&self, value: u16) -> crate::error::Result<()> {
+        // SAFETY: All union fields are primitive types, so zeroed memory is valid.
+        let mut val: crate::raw::fuel_gauge_prop_val = unsafe { core::mem::zeroed() };
+        
+        // SAFETY: Writing to the correct union field for this property.
+        unsafe { *val.sbs_remaining_capacity_alarm.as_mut() = value; }
+        
+        self.set_prop(FuelGaugeProp::SbsRemainingCapacityAlarm, val)
+    }
+
     /// Returns the gauge's `sbs_remaining_time_alarm` reading.
     pub fn sbs_remaining_time_alarm(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::SbsRemainingTimeAlarm).map(|val| unsafe { *val.sbs_remaining_time_alarm.as_ref() })
+    }
+
+    /// Sets the gauge's `sbs_remaining_time_alarm` setting.
+    pub fn set_sbs_remaining_time_alarm(&self, value: u16) -> crate::error::Result<()> {
+        // SAFETY: All union fields are primitive types, so zeroed memory is valid.
+        let mut val: crate::raw::fuel_gauge_prop_val = unsafe { core::mem::zeroed() };
+        
+        // SAFETY: Writing to the correct union field for this property.
+        unsafe { *val.sbs_remaining_time_alarm.as_mut() = value; }
+        
+        self.set_prop(FuelGaugeProp::SbsRemainingTimeAlarm, val)
     }
 
     /// Returns the gauge's `current_direction` reading.
