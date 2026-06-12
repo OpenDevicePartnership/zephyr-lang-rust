@@ -29,3 +29,18 @@
 		min-start-rpm = <3000>;
 	};
 };
+
+/ {
+    /* The actual RTC driver in zephyr */
+    rtc_emul: rtc_emul {
+        compatible = "zephyr,rtc-emul";
+        status = "okay";
+    };
+
+    /* The Rust wrapper node */
+    rs_rtc0: rs-rtc {
+        compatible = "rs,rtc";
+        rtc = <&rtc_emul>;       /* phandle to the real RTC */
+        resolution-hz = <1>;     /* 1 Hz resolution */
+    };
+};

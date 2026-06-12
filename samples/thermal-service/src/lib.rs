@@ -10,6 +10,7 @@ use static_cell::StaticCell;
 
 mod thermal;
 mod utils;
+mod time_alarm;
 
 // Entry point into the Rust program from Zephyr.
 #[unsafe(no_mangle)]
@@ -36,6 +37,13 @@ extern "C" fn rust_main() {
     })
 }
 
+// Define RelayHandler for UART Service
+embedded_services::relay::mctp::impl_odp_mctp_relay_handler!(
+    RelayHandler;
+    Thermal, 0x09, thermal_service_relay::ThermalServiceRelayHandler<crate::thermal::ThermalService>;
+    TimeAlarm, 0x0B, time_alarm_service_relay::TimeAlarmServiceRelayHandler<crate::time_alarm::TimeAlarmService>;
+);
+
 // Main embassy task to spawn all the child services.
 #[embassy_executor::task]
 async fn init(spawner: Spawner) {
@@ -45,26 +53,22 @@ async fn init(spawner: Spawner) {
 
     // Initialize services
     let thermal = crate::thermal::init(spawner).await;
+    let time_alarm = crate::time_alarm::init(spawner).await;
     // gonna put more here eventually
-    
-    // Spawn all the different tasks.
-    spawner.spawn(uart_service(thermal)).expect("Failed to spawn uart_service()");
-}
-
-// UART service. Spawns out the thermal, battery, and timer services.
-#[embassy_executor::task]
-async fn uart_service(thermal: crate::thermal::ThermalService) {
-    // Define RelayHandler for UART Service
-    embedded_services::relay::mctp::impl_odp_mctp_relay_handler!(
-        RelayHandler;
-        Thermal, 0x09, thermal_service_relay::ThermalServiceRelayHandler<crate::thermal::ThermalService>;
-    );
 
     // Create relay handler for the above services
     let relay = RelayHandler::new(
         thermal_service_relay::ThermalServiceRelayHandler::new(thermal),
+        time_alarm_service_relay::TimeAlarmServiceRelayHandler::new(time_alarm),
     );
+    
+    // Spawn all the different tasks.
+    spawner.spawn(uart_service(relay)).expect("Failed to spawn uart_service()");
+}
 
+// UART service. Spawns out the thermal, battery, and timer services.
+#[embassy_executor::task]
+async fn uart_service(relay: RelayHandler) {
     static UART_SERVICE: StaticCell<uart_service::DefaultService<RelayHandler>> = StaticCell::new();
     let uart_service = UART_SERVICE.init(uart_service::DefaultService::default_smbusespi(relay).unwrap());
     let uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::flexcomm0::get_instance().unwrap();

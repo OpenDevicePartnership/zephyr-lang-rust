@@ -46,7 +46,7 @@ pub struct PropertyArg {
     /// The type of the property.
     #[serde(rename = "type")]
     pub prop_type: PropertyType,
-    /// If true, property is optional. Generates `Option<T>` — `Some(value)` if present, `None` if absent.
+    /// If true, property is optional. Generates an `Option<T>`.
     #[serde(default)]
     pub optional: bool,
 }
@@ -218,6 +218,27 @@ impl Action {
     }
 }
 
+/// Specification for a phandle-based raw device source.
+///
+/// Supports two forms:
+/// - Simple: `raw: !Phandle rtc` - passes raw `*const device` pointer
+/// - Typed: `raw: !Phandle { property: rtc, device: crate::device::rtc::RtcRaw }` - constructs wrapper
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum PhandleSpec {
+    /// Simple form: just the property name, passes raw pointer and phandle cells.
+    /// Usage in YAML: `raw: !Phandle rtc`
+    Raw(String),
+    /// Typed form: construct a wrapper type from the phandle target.
+    /// Usage in YAML: `raw: !Phandle { property: rtc, device: crate::device::rtc::RtcRaw }`
+    Typed {
+        /// The devicetree property name containing the phandle.
+        property: String,
+        /// Full path to the wrapper type to construct (e.g., "crate::device::rtc::RtcRaw").
+        device: String,
+    },
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum RawInfo {
     /// Get the raw device directly from this node.
@@ -230,7 +251,7 @@ pub enum RawInfo {
     },
     /// Get the raw device from a phandle property.  Additional parameters in the phandle will be
     /// passed as additional arguments to the `new` constructor on the wrapper type.
-    Phandle(String),
+    Phandle(PhandleSpec),
 }
 
 impl RawInfo {
@@ -250,11 +271,9 @@ impl RawInfo {
             .unwrap_or(&[])
             .iter()
             .map(|p| {
-                // Check if property exists for optional handling
                 let has_prop = node.has_prop(&p.name);
                 
                 if p.optional && !has_prop {
-                    // Optional property not present — return None
                     return quote! { None };
                 }
                 
@@ -348,7 +367,12 @@ impl RawInfo {
                     }
                 }
             }
-            Self::Phandle(pname) => {
+            Self::Phandle(spec) => {
+                let (pname, phandle_device_type) = match spec {
+                    PhandleSpec::Raw(name) => (name.as_str(), None),
+                    PhandleSpec::Typed { property, device: dev } => (property.as_str(), Some(dev.as_str())),
+                };
+
                 let words = node.get_words(pname).unwrap();
                 // We assume that elt 0 is the phandle, and that the rest are numbers.
                 let target = if let Word::Phandle(handle) = &words[0] {
@@ -364,17 +388,49 @@ impl RawInfo {
 
                 let target_route = target.route_to_rust();
 
-                quote! {
-                    #cfg_attr
-                    static UNIQUE: crate::device::Unique = crate::device::Unique::new();
-                    #cfg_attr
-                    static STATIC: #static_type = #static_type::new();
-                    #cfg_attr
-                    pub fn get_instance() -> Option<#device_id> {
-                        unsafe {
-                            let device = #target_route :: get_instance_raw();
-                            let device_static = #target_route :: get_static_raw();
-                            #device_id::new(&UNIQUE, &STATIC, device, device_static, #(#args),* #(, #prop_args)*)
+                match phandle_device_type {
+                    None => {
+                        // Raw mode: pass raw pointer and cells to the outer device's ::new()
+                        quote! {
+                            #cfg_attr
+                            static UNIQUE: crate::device::Unique = crate::device::Unique::new();
+                            #cfg_attr
+                            static STATIC: #static_type = #static_type::new();
+                            #cfg_attr
+                            pub fn get_instance() -> Option<#device_id> {
+                                unsafe {
+                                    let device = #target_route :: get_instance_raw();
+                                    let device_static = #target_route :: get_static_raw();
+                                    #device_id::new(&UNIQUE, &STATIC, device, device_static, #(#args),* #(, #prop_args)*)
+                                }
+                            }
+                        }
+                    }
+                    Some(phandle_dev) => {
+                        // Typed mode: construct the phandle wrapper and pass it to the outer device's ::new()
+                        let phandle_device_id = str_to_path(phandle_dev);
+                        quote! {
+                            #cfg_attr
+                            static UNIQUE: crate::device::Unique = crate::device::Unique::new();
+                            #cfg_attr
+                            static STATIC: #static_type = #static_type::new();
+                            #cfg_attr
+                            static PHANDLE_UNIQUE: crate::device::Unique = crate::device::Unique::new();
+                            #cfg_attr
+                            static PHANDLE_STATIC: crate::device::NoStatic = crate::device::NoStatic::new();
+                            #cfg_attr
+                            pub fn get_instance() -> Option<#device_id> {
+                                unsafe {
+                                    let device = #target_route :: get_instance_raw();
+                                    let phandle_wrapper = #phandle_device_id::new(
+                                        &PHANDLE_UNIQUE,
+                                        &PHANDLE_STATIC,
+                                        device
+                                        #(, #args)*
+                                    )?;
+                                    #device_id::new(&UNIQUE, &STATIC, phandle_wrapper #(, #prop_args)*)
+                                }
+                            }
                         }
                     }
                 }

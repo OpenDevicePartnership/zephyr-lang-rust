@@ -7,14 +7,12 @@ type SensorService = thermal_service::sensor::Service<'static, tmp11x::Sensor, S
 type FanService = thermal_service::fan::Service<'static, zephyr::device::pwm_fan::PwmFan, SensorService, FanEventSender, 16>;
 pub type ThermalService = thermal_service::Service<'static, SensorService, FanService>;
 
-#[allow(clippy::needless_return)]
 pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
     embedded_services::info!("Initializing thermal service...");
 
     // Create and spawn sensor service
-    let sensor_service = crate::utils::spawn_service!(
-        spawner,
-        SensorService,
+    let sensor_service = crate::utils::spawn_service!(spawner, SensorService, |resources| thermal_service::sensor::Service::new(
+        resources,
         thermal_service::sensor::InitParams {
             driver: tmp11x::Sensor::new(),                         // The TMP11x temperature sensor driver
             event_senders: &mut [],    // List of event senders
@@ -25,26 +23,29 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
                 fast_sample_period: embassy_time::Duration::from_secs(2), // Rate at which to sample the sensor when operating in fast conditions
                 ..Default::default()
             },
-        }
-    )
+        },
+    ))
     .expect("Failed to spawn sensor_service.");
 
     // Create and spawn fan service
     let fan_service = crate::utils::spawn_service!(
         spawner,
         FanService,
-        thermal_service::fan::InitParams {
-            driver: zephyr::devicetree::labels::fan0::get_instance().unwrap(),
-            sensor_service,
-            event_senders: &mut [],
-            config: thermal_service::fan::Config {
-                auto_control: true,
-                min_temp: 21.0,
-                ramp_temp: 22.0,
-                max_temp: 25.0,
-                ..Default::default()
+        |resources| thermal_service::fan::Service::new(
+            resources,
+            thermal_service::fan::InitParams {
+                driver: zephyr::devicetree::labels::fan0::get_instance().expect("Failed to call zephyr::devicetree::labels::fan0::get_instance"),
+                sensor_service,
+                event_senders: &mut [],
+                config: thermal_service::fan::Config {
+                    auto_control: true,
+                    min_temp: 21.0,
+                    ramp_temp: 22.0,
+                    max_temp: 25.0,
+                    ..Default::default()
+                },
             },
-        }
+        )
     )
     .expect("Failed to spawn fan service");
 
@@ -57,9 +58,8 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
 
     static RESOURCES: static_cell::StaticCell<thermal_service::Resources<SensorService, FanService>> = static_cell::StaticCell::new();
     let resources = RESOURCES.init(thermal_service::Resources::default());
-    let service = thermal_service::Service::init(resources, thermal_service::InitParams { sensors, fans });
-
-    return service;
+    
+    thermal_service::Service::init(resources, thermal_service::InitParams { sensors, fans })
 }
 
 mod tmp11x {
@@ -70,7 +70,7 @@ mod tmp11x {
     pub struct Sensor(zephyr::device::temperature_sensor::TemperatureSensor);
     impl Sensor {
         pub fn new() -> Self {
-            Self(zephyr::devicetree::labels::ti_tmp11x::get_instance().unwrap())
+            Self(zephyr::devicetree::labels::ti_tmp11x::get_instance().expect("Failed to call zephyr::devicetree::labels::ti_tmp11x::get_instance()"))
         }
     }
     impl thermal_service_interface::sensor::Driver for Sensor {} // Marker trait so Sensor can be used with thermal_service.

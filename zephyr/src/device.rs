@@ -25,6 +25,8 @@ pub mod pwm;
 pub mod pwm_fan;
 #[cfg(CONFIG_SERIAL)]
 pub mod uart;
+#[cfg(CONFIG_RTC)]
+pub mod rtc;
 
 // Allow dead code, because it isn't required for a given build to have any devices.
 /// Device uniqueness.

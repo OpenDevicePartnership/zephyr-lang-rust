@@ -28,12 +28,14 @@ arrayvec = { version = "0.7.6", default-features = false }
 
 # Imports for pwm_fan.rs:
 embedded-fans-async = {version = "0.2.0"}
-thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services"}
+thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
 
 # Imports for uart.rs:
 embedded-io-async = {version = "0.7.0"}
-uart-service = { git = "https://github.com/OpenDevicePartnership/embedded-services"}
 heapless = "0.8"
+
+# Imports for rtc.rs
+embedded-mcu-hal = {version = "0.3.0"}
 
 [dependencies.fugit]
 version = "0.3.7"
