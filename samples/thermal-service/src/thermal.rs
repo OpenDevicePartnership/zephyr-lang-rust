@@ -7,7 +7,6 @@ type SensorService = thermal_service::sensor::Service<'static, tmp11x::Sensor, S
 type FanService = thermal_service::fan::Service<'static, zephyr::device::pwm_fan::PwmFan, SensorService, FanEventSender, 16>;
 pub type ThermalService = thermal_service::Service<'static, SensorService, FanService>;
 
-#[allow(clippy::needless_return)]
 pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
     embedded_services::info!("Initializing thermal service...");
 
@@ -59,9 +58,8 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
 
     static RESOURCES: static_cell::StaticCell<thermal_service::Resources<SensorService, FanService>> = static_cell::StaticCell::new();
     let resources = RESOURCES.init(thermal_service::Resources::default());
-    let service = thermal_service::Service::init(resources, thermal_service::InitParams { sensors, fans });
-
-    return service;
+    
+    thermal_service::Service::init(resources, thermal_service::InitParams { sensors, fans })
 }
 
 mod tmp11x {

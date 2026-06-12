@@ -23,7 +23,7 @@ pub async fn init(spawner: embassy_executor::Spawner) -> TimeAlarmService {
     static RTC_DRIVER: StaticCell<zephyr::device::rtc::Rtc> = StaticCell::new();
     let rtc_driver = RTC_DRIVER.init(zephyr::devicetree::rs_rtc::get_instance().expect("Failed to call zephyr::devicetree::rs_rtc::get_instance()"));
 
-    let service = crate::utils::spawn_service!(spawner, TimeAlarmService, |resources| {
+    crate::utils::spawn_service!(spawner, TimeAlarmService, |resources| {
         time_alarm_service::Service::new(
             resources,
             rtc_driver,
@@ -34,7 +34,5 @@ pub async fn init(spawner: embassy_executor::Spawner) -> TimeAlarmService {
             dc_pol_storage,
         )
     })
-    .expect("Failed to spawn time alarm service!");
-
-    return service;
+    .expect("Failed to spawn time alarm service!")
 }
