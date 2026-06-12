@@ -121,34 +121,22 @@ impl FuelGauge {
     //         Zephyr has docs for `enum fuel_gauge_prop_type`, where each of the enums has a comment
     //         about the units being returned + any extra info.
 
-    /// The size of the manufacturer name, in bytes.
-    /// According to Zephyr, manufacturer name is 1 byte of string length + 20 bytes of data.
-    pub const MANUFACTURER_NAME_SIZE: usize = 21;
-    /// Returns the gauge's `manufacturer_name` reading.
-    pub fn manufacturer_name(&self) -> crate::error::Result<[u8; Self::MANUFACTURER_NAME_SIZE]> {
-        let mut buffer = [0u8; Self::MANUFACTURER_NAME_SIZE];
-        self.get_buffer_prop(FuelGaugeBufferProp::ManufacturerName, &mut buffer)?;
-        Ok(buffer)
+    /// Reads the gauge's `manufacturer_name` into the provided buffer.
+    /// According to Zephyr, manufacturer name is 1 byte of string length + 20 bytes of data (21 bytes total).
+    pub fn manufacturer_name(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
+        self.get_buffer_prop(FuelGaugeBufferProp::ManufacturerName, buffer)
     }
 
-    /// The size of the device name, in bytes.
-    /// According to Zephyr, device name is 1 byte of string length + 20 bytes of data.
-    pub const DEVICE_NAME_SIZE: usize = 21;
-    /// Returns the gauge's `device_name` reading.
-    pub fn device_name(&self) -> crate::error::Result<[u8; Self::DEVICE_NAME_SIZE]> {
-        let mut buffer = [0u8; Self::DEVICE_NAME_SIZE];
-        self.get_buffer_prop(FuelGaugeBufferProp::DeviceName, &mut buffer)?;
-        Ok(buffer)
+    /// Reads the gauge's `device_name` into the provided buffer.
+    /// According to Zephyr, device name is 1 byte of string length + 20 bytes of data (21 bytes total).
+    pub fn device_name(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
+        self.get_buffer_prop(FuelGaugeBufferProp::DeviceName, buffer)
     }
 
-    /// The size of the device chemistry, in bytes.
-    /// According to Zephyr, device chemistry is 1 byte of string length + 4 bytes of data.
-    pub const DEVICE_CHEMISTRY_SIZE: usize = 5;
-    /// Returns the gauge's `device_chemistry` reading.
-    pub fn device_chemistry(&self) -> crate::error::Result<[u8; Self::DEVICE_CHEMISTRY_SIZE]> {
-        let mut buffer = [0u8; Self::DEVICE_CHEMISTRY_SIZE];
-        self.get_buffer_prop(FuelGaugeBufferProp::DeviceChemistry, &mut buffer)?;
-        Ok(buffer)
+    /// Reads the gauge's `device_chemistry` into the provided buffer.
+    /// According to Zephyr, device chemistry is 1 byte of string length + 4 bytes of data (5 bytes total).
+    pub fn device_chemistry(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
+        self.get_buffer_prop(FuelGaugeBufferProp::DeviceChemistry, buffer)
     }
 
     /// Returns the gauge's `avg_current` reading.
@@ -540,7 +528,7 @@ impl FuelGauge {
     }
 }
 
-use embedded_batteries_async::smart_battery::{BatteryModeFields, CapacityModeValue, CapacityModeSignedValue, MilliVolts, Minutes, DeciKelvin, MilliAmpsSigned};
+use embedded_batteries_async::smart_battery::{BatteryModeFields, ManufactureDate, Cycles, BatteryStatusFields, CapacityModeValue, SpecificationInfoFields, CapacityModeSignedValue, MilliVolts, Minutes, DeciKelvin, MilliAmps, MilliAmpsSigned, Percent};
 impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
 
     async fn battery_mode(&mut self) -> Result<BatteryModeFields, Self::Error> {
@@ -681,7 +669,189 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
             crate::error::Error(crate::raw::EINVAL)
         })?;
 
-        Ok(result)
+        Ok(result as MilliAmpsSigned)
+    }
+
+    async fn average_current(&mut self) -> Result<MilliAmpsSigned, Self::Error> {
+        let microamps: i32 = self.avg_current()?; // self.avg_current returns in uA
+
+        // We need to convert to mA according to the trait method requirement.
+        let milliamps: i32 = microamps / 1000;
+
+        // We also need to convert from `i32` to `i16`. In case we run into overflow, print an error.
+        let result: i16 = i16::try_from(milliamps).map_err(|_| {
+            log::error!("Current out of i16 range: {}mA! Returning an error.", milliamps);
+            crate::error::Error(crate::raw::EINVAL)
+        })?;
+
+        Ok(result as MilliAmpsSigned)
+    }
+
+    async fn max_error(&mut self) -> Result<Percent, Self::Error> {
+        Err(crate::error::Error(crate::raw::ENOTSUP)) // u_TODO: Zephyr API doesn't give us this as far as I can tell. I think this should be fairly easy to add upstream on Zephyr though since this is part of the SBS spec and there seems to be a `SBS_GAUGE_CMD_MAX_ERROR` defined in sbs_gauge.h, it just isn't exposed aynwhere in the public API 
+    }
+
+    async fn relative_state_of_charge(&mut self) -> Result<Percent, Self::Error> {
+        Ok(FuelGauge::relative_state_of_charge(self)? as Percent)
+    }
+
+    async fn absolute_state_of_charge(&mut self) -> Result<Percent, Self::Error> {
+        Ok(FuelGauge::absolute_state_of_charge(self)? as Percent)
+    }
+
+    async fn remaining_capacity(&mut self) -> Result<CapacityModeValue, Self::Error> {
+        let uAh: u32 = FuelGauge::remaining_capacity(self)?; // Returned in uAh. Apparently, it's always uAh regardless of the CAPACITY_MODE bit, according to the Zephyr docs.
+        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+
+        // We need to convert to mAh (from uAh) according to the trait method requirement.
+        let mAh: u32 = uAh / 1000;
+
+        // We also need to convert from `u32` to `u16`. In case we run into overflow, print an error.
+        let mAh: u16 = u16::try_from(mAh).map_err(|_| {
+            log::error!("mAh out of u16 range: {}mAh! Returning an error.", mAh);
+            crate::error::Error(crate::raw::EINVAL)
+        })?;
+
+        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate. (centiwatt == 10mW)
+        // When false, the capacity information should be reported in mA or mAh as appropriate.
+        match capacity_mode {
+            // If false, the returned value is expected to be in mAh, so we don't need to do any conversions.
+            false => Ok(CapacityModeValue::MilliAmpUnsigned(mAh)),
+
+            // If true, the returned value is expected to be in cWh, so we need to convert from mAh to cWh.
+            true => {
+                // cWh = (mAh × uV) / 10_000_000
+                let uV: i32 = FuelGauge::voltage(self)?; // Returned in uV 
+                let cWh = (mAh as i64 * uV as i64) / 10_000_000;
+                let cWh: u16 = u16::try_from(cWh).map_err(|_| {
+                    log::error!("cWh out of u16 range: {}cWh! Returning an error.", cWh);
+                    crate::error::Error(crate::raw::EINVAL)
+                })?;
+
+                Ok(CapacityModeValue::CentiWattUnsigned(cWh))
+            },
+        }
+    }
+
+    async fn full_charge_capacity(&mut self) -> Result<CapacityModeValue, Self::Error> {
+        let uAh: u32 = FuelGauge::full_charge_capacity(self)?; // Returned in uAh. Apparently, it's always uAh regardless of the CAPACITY_MODE bit, according to the Zephyr docs.
+        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+
+        // We need to convert to mAh (from uAh) according to the trait method requirement.
+        let mAh: u32 = uAh / 1000;
+
+        // We also need to convert from `u32` to `u16`. In case we run into overflow, print an error.
+        let mAh: u16 = u16::try_from(mAh).map_err(|_| {
+            log::error!("mAh out of u16 range: {}mAh! Returning an error.", mAh);
+            crate::error::Error(crate::raw::EINVAL)
+        })?;
+
+        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate. (centiwatt == 10mW)
+        // When false, the capacity information should be reported in mA or mAh as appropriate.
+        match capacity_mode {
+            // If false, the returned value is expected to be in mAh, so we don't need to do any conversions.
+            false => Ok(CapacityModeValue::MilliAmpUnsigned(mAh)),
+
+            // If true, the returned value is expected to be in cWh, so we need to convert from mAh to cWh.
+            true => {
+                // cWh = (mAh × uV) / 10_000_000
+                let uV: i32 = FuelGauge::voltage(self)?; // Returned in uV 
+                let cWh = (mAh as i64 * uV as i64) / 10_000_000;
+                let cWh: u16 = u16::try_from(cWh).map_err(|_| {
+                    log::error!("cWh out of u16 range: {}cWh! Returning an error.", cWh);
+                    crate::error::Error(crate::raw::EINVAL)
+                })?;
+
+                Ok(CapacityModeValue::CentiWattUnsigned(cWh))
+            },
+        }
+    }
+
+    async fn run_time_to_empty(&mut self) -> Result<Minutes, Self::Error> {
+        let minutes: u32 = self.runtime_to_empty()?;
+        let minutes: u16 = u16::try_from(minutes).map_err(|_| {
+            log::error!("minutes out of u16 range: {} minutes! Returning an error.", minutes);
+            crate::error::Error(crate::raw::EINVAL)
+        })?;
+        Ok(minutes as Minutes)
+    }
+
+    async fn average_time_to_empty(&mut self) -> Result<Minutes, Self::Error> {
+        Err(crate::error::Error(crate::raw::ENOTSUP)) // u_TODO: Zephyr API doesn't give us this as far as I can tell.
+    }
+
+    async fn charging_current(&mut self) -> Result<MilliAmps, Self::Error> {
+        let uA: u32 = self.chg_current()?;
+        let mA: u32 = uA / 1000;
+        let mA: u16 = u16::try_from(mA).map_err(|_| {
+            log::error!("mA out of u16 range: {} mA! Returning an error.", mA);
+            crate::error::Error(crate::raw::EINVAL)
+        })?;
+        Ok(mA as MilliAmps)
+    }
+
+    async fn charging_voltage(&mut self) -> Result<MilliVolts, Self::Error> {
+        let uV: u32 = self.chg_voltage()?;
+        let mV: u32 = uV / 1000;
+        let mV: u16 = u16::try_from(mV).map_err(|_| {
+            log::error!("mV out of u16 range: {} mV! Returning an error.", mV);
+            crate::error::Error(crate::raw::EINVAL)
+        })?;
+        Ok(mV as MilliVolts)
+    }
+
+    async fn battery_status(&mut self) -> Result<BatteryStatusField, Self::Error> {
+        Ok(BatteryStatusFields::from_bits(self.fg_status()?))
+    }
+
+    async fn cycle_count(&mut self) -> Result<Cycles, Self::Error> {
+        let cycles: u32 = FuelGauge::cycle_count(self)?;
+        let cycles: u16 = u16::try_from(cycles).map_err(|_| {
+            log::error!("cycles out of u16 range: {} cycles! Returning an error.", cycles);
+            crate::error::Error(crate::raw::EINVAL)
+        })?;
+        Ok(cycles as Cycles)
+    }
+
+    async fn design_capacity(&mut self) -> Result<CapacityModeValue, Self::Error> {
+        let value: u16 = self.design_cap()?; // Returned in either mAh or 10mWh depending on the capacity_mode, according to Zephyr docs.
+        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+
+        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate.
+        // When false, the capacity information should be reported in mA or mAh as appropriate.
+        match capacity_mode {
+            true => Ok(CapacityModeValue::CentiWattUnsigned(value)), // centiwatt == 10mW
+            false => Ok(CapacityModeValue::MilliAmpUnsigned(value)),
+        }
+    }
+
+    async fn design_voltage(&mut self) -> Result<MilliVolts, Self::Error> {
+        let mV: u16 = self.design_volt()?; // Returned in mV if you can believe it
+        Ok(mV as MilliVolts)
+    }
+
+    async fn specification_info(&mut self) -> Result<SpecificationInfoFields, Self::Error> {
+        Err(crate::error::Error(crate::raw::ENOTSUP)) // u_TODO: Zephyr API doesn't give us this as far as I can tell.
+    }
+
+    async fn manufacture_date(&mut self) -> Result<ManufactureDate, Self::Error> {
+        Err(crate::error::Error(crate::raw::ENOTSUP)) // u_TODO: Zephyr API doesn't give us this as far as I can tell.
+    }
+
+    async fn serial_number(&mut self) -> Result<u16, Self::Error> {
+        Err(crate::error::Error(crate::raw::ENOTSUP)) // u_TODO: Zephyr API doesn't give us this as far as I can tell.
+    }
+
+    async fn manufacturer_name(&mut self, name: &mut [u8]) -> Result<(), Self::Error> {
+        FuelGauge::manufacturer_name(self, name)
+    }
+
+    async fn device_name(&mut self, name: &mut [u8]) -> Result<(), Self::Error> {
+        FuelGauge::device_name(self, name)
+    }
+
+    async fn device_chemistry(&mut self, name: &mut [u8]) -> Result<(), Self::Error> {
+        FuelGauge::device_chemistry(self, name)
     }
 }
 
