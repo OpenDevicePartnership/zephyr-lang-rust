@@ -448,7 +448,7 @@ impl FuelGauge {
     }
 }
 
-use embedded_batteries_async::smart_battery::{BatteryModeFields, CapacityModeValue};
+use embedded_batteries_async::smart_battery::{BatteryModeFields, CapacityModeValue, MilliVolts};
 impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
 
     async fn battery_mode(&mut self) -> Result<BatteryModeFields, Self::Error> {
@@ -465,6 +465,55 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
             true => Ok(CapacityModeValue::CentiWattUnsigned(value)), // centiwatt == 10mW
             false => Ok(CapacityModeValue::MilliAmpUnsigned(value)),
         }
+    }
+
+    async fn voltage(&mut self) -> Result<MilliVolts, Self::Error> {
+        let microvolts: i32 = self.voltage()?; // self.voltage() returns in uV
+
+        // We need to convert to mV according to the trait method requirement.
+        let millivolts: i32 = microvolts / 1000;
+
+        // We also need to convert from `i32` to `u16`. In case we read a negative voltage for whatever reason, print an error.
+        let result: u16 = u16::try_from(millivolts).unwrap_or_else(|_| {
+            log::warn!("Voltage out of u16 range: {}mV, clamping to 0", millivolts);
+            0
+        });
+
+        Ok(result)
+    }
+
+    #[allow(non_snake_case)]
+    async fn set_remaining_capacity_alarm(&mut self, capacity: CapacityModeValue) -> Result<(), Self::Error> {
+        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+
+        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate.
+        // When false, the capacity information should be reported in mA or mAh as appropriate.
+        let raw: u16 = match (capacity_mode, capacity) {
+
+            // Good cases where the provided `capacity` is consistent with `capacity_mode`
+            (true, CapacityModeValue::CentiWattUnsigned(value)) => value, // centiwatt == 10mW
+            (false, CapacityModeValue::MilliAmpUnsigned(value)) => value,
+
+            // Mismatch: `capacity_mode` expects mAh, but `capacity` is in 10mWh.
+            // Convert from 10mWh to mAh: mAh = (10mWh × 10 × 1000) / mV = value × 10_000 / mV
+            (false, CapacityModeValue::CentiWattUnsigned(value)) => {
+                let mV = SmartBattery::voltage(self).await? as u32;
+                let mAh = (value as u32 * 10_000) / mV;
+                log::warn!("In set_remaining_capacity_alarm: Caller provided capacity in 10mWh, but device expects mAh. Automatically converting.");
+                mAh as u16
+            },
+
+            // Mismatch: `capacity_mode` expects 10mWh, but `capacity` is in mAh.
+            // Convert from mAh to 10mWh: 10mWh = mAh × mV / 10_000
+            (true, CapacityModeValue::MilliAmpUnsigned(value)) => {
+                let mV = SmartBattery::voltage(self).await? as u32;
+                let cWh = (value as u32 * mV) / 10_000; // cWh == 10mWh
+                log::warn!("In set_remaining_capacity_alarm: Caller provided capacity in mAh, but device expects 10mWh. Automatically converting.");
+                cWh as u16
+            },
+        };
+
+        self.set_sbs_remaining_capacity_alarm(raw)
     }
 }
 
