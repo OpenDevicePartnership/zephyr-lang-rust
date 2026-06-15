@@ -122,8 +122,8 @@ impl FuelGauge {
 }
 
 // FuelGauge impl block 2.
-// This impl block contains the main public getters/setters for FuelGauge.
-// They provide a type-safe way to get and set the fuel gauge props.
+/// This block contains the main public getters/setters for FuelGauge.
+/// They provide a type-safe way to get and set the fuel gauge props included in Zephyr's Fuel Gauge API.
 impl FuelGauge {
     // u_TODO: Will probably want to make these function comments more descriptive in the future.
     //         Zephyr has docs for `enum fuel_gauge_prop_type`, where each of the enums has a comment
@@ -569,7 +569,7 @@ impl From<bool> for CapacityMode {
 }
 
 // FuelGauge impl block 3.
-// This impl block provides wrappers to get and set the state of the `CAPACITY_MODE` bit.
+/// This block provides wrappers to get and set the state of the `CAPACITY_MODE` bit.
 impl FuelGauge {
     /// Returns the gauge's current `CapacityMode` state.
     /// 
@@ -933,8 +933,115 @@ impl embedded_batteries_async::smart_battery::Error for crate::error::Error {
     }
 }
 
-// impl battery_service::controller for FuelGauge {
-//     async fn initialize(&mut self) -> Result<(), Self::ControllerError> {
+impl battery_service::controller::Controller for FuelGauge {
+    type ControllerError = crate::error::Error;
 
-//     }
-// }
+    async fn initialize(&mut self) -> Result<(), Self::ControllerError> {
+        self.set_capacity_mode(CapacityMode::CentiWatt).await
+    }
+
+    async fn ping(&mut self) -> Result<(), Self::ControllerError> {
+        use embedded_batteries_async::smart_battery::SmartBattery;
+        SmartBattery::charging_voltage(self).await.inspect_err(|e| log::error!("Failed to ping fuel gauge: Call to self.charging_voltage() failed with e: {}", e))?;
+        log::info!("Successfully pinged fuel gauge.");
+        Ok(())
+    }
+
+    async fn get_dynamic_data(&mut self) -> Result<battery_service::device::DynamicBatteryMsgs, Self::ControllerError> {
+        use embedded_batteries_async::smart_battery::SmartBattery;
+        use embedded_batteries_async::smart_battery::CapacityModeValue;
+
+        let voltage_mv: u32 = SmartBattery::voltage(self).await?.into();
+
+        let new_msgs = battery_service::device::DynamicBatteryMsgs {
+            average_current_ma: SmartBattery::average_current(self).await?,
+            battery_status: SmartBattery::battery_status(self).await?.into_bits(),
+            max_power_mw: 0,
+            battery_temp_dk: SmartBattery::temperature(self).await?,
+            sus_power_mw: 0,
+            charging_current_ma: SmartBattery::charging_current(self).await?,
+            charging_voltage_mv: SmartBattery::charging_voltage(self).await?,
+            voltage_mv: voltage_mv as u16,
+            current_ma: SmartBattery::current(self).await?,
+            full_charge_capacity_mwh: match SmartBattery::full_charge_capacity(self).await? {
+                CapacityModeValue::CentiWattUnsigned(cwh) => (cwh as u32) * 10,
+                CapacityModeValue::MilliAmpUnsigned(mah) => (mah as u32) * voltage_mv / 1000,
+            },
+            remaining_capacity_mwh: match SmartBattery::remaining_capacity(self).await? {
+                CapacityModeValue::CentiWattUnsigned(cwh) => (cwh as u32) * 10,
+                CapacityModeValue::MilliAmpUnsigned(mah) => (mah as u32) * voltage_mv / 1000,
+            },
+            relative_soc_pct: SmartBattery::relative_state_of_charge(self).await?.into(),
+            cycle_count: SmartBattery::cycle_count(self).await?,
+            max_error_pct: SmartBattery::max_error(self).await.unwrap_or(0).into(), // u_TODO: Hardcoding to zero since the Zephyr API doesn't expose max error yet
+            bmd_status: battery_service_interface::BmdStatusFlags::default(),
+            turbo_vload_mv: 0,
+            turbo_rhf_effective_mohm: 0,
+        };
+        Ok(new_msgs)
+    }
+
+    #[allow(clippy::indexing_slicing)]
+    async fn get_static_data(&mut self) -> Result<battery_service::device::StaticBatteryMsgs, Self::ControllerError> {
+        use embedded_batteries_async::smart_battery::SmartBattery;
+        use embedded_batteries_async::smart_battery::CapacityModeValue;
+
+        let design_voltage_mv: u32 = SmartBattery::design_voltage(self).await?.into();
+        let design_capacity_mwh: u32 = match SmartBattery::design_capacity(self).await?.into() {
+            CapacityModeValue::CentiWattUnsigned(cwh) => (cwh as u32) * 10,
+            CapacityModeValue::MilliAmpUnsigned(mah) => (mah as u32) * design_voltage_mv / 1000,
+        };
+
+        let mut new_msgs = battery_service::device::StaticBatteryMsgs {
+            manufacturer_name: Default::default(),
+            device_name: Default::default(),
+            device_chemistry: Default::default(),
+            design_voltage_mv: design_voltage_mv as u16,
+            design_capacity_mwh: design_capacity_mwh,
+            device_chemistry_id: Default::default(),
+            serial_num: Default::default(),
+            battery_mode: SmartBattery::battery_mode(self).await?,
+            design_cap_warning: design_capacity_mwh / 4,
+            design_cap_low: design_capacity_mwh / 10,
+            measurement_accuracy: SmartBattery::max_error(self).await.unwrap_or(0).into(), // u_TODO: Hardcoding to zero since the Zephyr API doesn't expose max error yet
+            max_sample_time: Default::default(),
+            min_sample_time: Default::default(),
+            max_averaging_interval: Default::default(),
+            min_averaging_interval: Default::default(),
+            cap_granularity_1: Default::default(),
+            cap_granularity_2: Default::default(),
+            power_threshold_support: battery_service_interface::PowerThresholdSupport::empty(),
+            max_instant_pwr_threshold: Default::default(),
+            max_sus_pwr_threshold: Default::default(),
+            bmc_flags: battery_service_interface::BmcControlFlags::empty(),
+            bmd_capability: battery_service_interface::BmdCapabilityFlags::empty(),
+            bmd_recalibrate_count: Default::default(),
+            bmd_quick_recalibrate_time: Default::default(),
+            bmd_slow_recalibrate_time: Default::default(),
+        };
+        let mut buf = [0u8; 21];
+
+        let buf_len = new_msgs.manufacturer_name.len();
+        SmartBattery::manufacturer_name(self, &mut buf[..buf_len]).await?;
+        new_msgs.manufacturer_name.copy_from_slice(&buf[..buf_len]);
+
+        let buf_len = new_msgs.device_name.len();
+        SmartBattery::device_name(self, &mut buf[..buf_len]).await?;
+        new_msgs.device_name.copy_from_slice(&buf[..buf_len]);
+
+        let buf_len = new_msgs.device_chemistry.len();
+        SmartBattery::device_chemistry(self, &mut buf[..buf_len]).await?;
+        new_msgs.device_chemistry.copy_from_slice(&buf[..buf_len]);
+
+        Ok(new_msgs)
+    }
+
+    async fn get_device_event(&mut self) -> battery_service::controller::ControllerEvent {
+        // TODO: Loop forever till we figure out what we want to do here
+        loop {
+            embassy_time::Timer::after_secs(1000000).await;
+        }
+    }
+
+    fn set_timeout(&mut self, _duration: embassy_time::Duration) {}
+}

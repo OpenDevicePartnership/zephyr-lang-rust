@@ -32,6 +32,9 @@ thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/em
 
 # Imports for fuel_gauge.rs:
 embedded-batteries-async = {version = "0.3.4"}
+battery-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+battery-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+embassy-time = "0.5"  # u_Note: Must match battery-service's version since Duration is in their public API
 
 # Imports for uart.rs:
 embedded-io-async = {version = "0.7.0"}
