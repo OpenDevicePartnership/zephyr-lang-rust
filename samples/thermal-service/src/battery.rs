@@ -1,4 +1,3 @@
-use embedded_services::{error, info};
 use static_cell::StaticCell;
 
 pub type BatteryService = battery_service::Service<'static, 1>;
@@ -6,7 +5,7 @@ pub type BatteryService = battery_service::Service<'static, 1>;
 const BAT_ID: battery_service::device::DeviceId = battery_service::device::DeviceId(0);
 
 pub async fn init(spawner: embassy_executor::Spawner) -> BatteryService {
-    info!("Initializing battery service...");
+    log::info!("Initializing battery service...");
 
     static BATTERY_DEVICE: StaticCell<battery_service::device::Device> = StaticCell::new();
     let device = BATTERY_DEVICE.init(battery_service::device::Device::new(BAT_ID));
@@ -25,6 +24,7 @@ pub async fn init(spawner: embassy_executor::Spawner) -> BatteryService {
     spawner.spawn(battery_device_controller_task(battery)).expect("Failed to spawn battery device controller task");
     spawner.spawn(update_data_task(service)).expect("Failed to spawn battery update data task");
 
+    log::info!("Initialized battery service!");
     service
 }
 
@@ -34,18 +34,14 @@ async fn battery_device_controller_task(battery: battery_service::wrapper::Wrapp
 }
 
 #[embassy_executor::task]
-pub async fn update_data_task(service: BatteryService) -> ! {
+pub async fn update_data_task(service: BatteryService) {
 
-    // Helper to tell the statemachine to try to recover.
-    async fn recover_state_machine(service: &BatteryService) -> Result<(), ()> {
-        loop {
-            match service.execute_event(battery_service::context::BatteryEvent {event: battery_service::context::BatteryEventInner::Timeout, device_id: BAT_ID}).await {
-                Ok(_) => return Ok(()),
-                Err(battery_service::context::ContextError::StateError(battery_service::context::StateMachineError::DeviceTimeout)) => {embassy_time::Timer::after_secs(10).await;}
-                Err(battery_service::context::ContextError::StateError(battery_service::context::StateMachineError::NoOpRecoveryFailed)) => return Err(()),
-                _ => {}
-            }
-        }
+    log::info!("Inside update_data_task()"); // u_Note: REMOVE
+
+    // Initialize the state machine
+    if let Err(e) = battery_service::mock::init_state_machine(&service).await {
+        log::error!("FG: Failed to init state machine: {:?}. Terminating this task...", e);
+        return;
     }
 
     let mut failures: u32 = 0;
@@ -61,7 +57,7 @@ pub async fn update_data_task(service: BatteryService) -> ! {
                 .await
         {
             failures += 1;
-            error!("FG: Static data error: {:#?}", e);
+            log::error!("FG: Static data error: {:#?}", e);
         }
         if let Err(e) = service
             .execute_event(battery_service::context::BatteryEvent {
@@ -71,15 +67,15 @@ pub async fn update_data_task(service: BatteryService) -> ! {
             .await
         {
             failures += 1;
-            error!("FG: Dynamic data error: {:#?}", e);
+            log::error!("FG: Dynamic data error: {:#?}", e);
         }
 
         if failures > 10 {
             failures = 0;
             count = 0;
-            error!("FG: Too many errors, timing out and starting recovery...");
-            if recover_state_machine(&service).await.is_err() {
-                error!("FG: Failed to recover state machine!");
+            log::error!("FG: Too many errors, timing out and starting recovery...");
+            if battery_service::mock::recover_state_machine(&service).await.is_err() {
+                log::error!("FG: Failed to recover state machine!");
             }
         }
 

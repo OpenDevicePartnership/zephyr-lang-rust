@@ -77,6 +77,8 @@ impl FuelGauge {
     pub(crate) fn get_prop(&self, prop: FuelGaugeProp) -> crate::error::Result<crate::raw::fuel_gauge_prop_val> {
         let mut buffer = core::mem::MaybeUninit::<crate::raw::fuel_gauge_prop_val>::uninit();
 
+        log::info!("inside get_prop()"); // u_Note: REMOVE
+
         crate::error::to_result_void(
             // SAFETY: - `self.device` lives for the entire duration of `self`.
             //         -  `prop` is a copy owned by this function.
