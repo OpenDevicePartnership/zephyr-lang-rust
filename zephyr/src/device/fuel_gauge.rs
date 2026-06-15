@@ -59,6 +59,9 @@ pub(crate) enum FuelGaugeBufferProp {
     DeviceChemistry = crate::raw::fuel_gauge_prop_type_FUEL_GAUGE_DEVICE_CHEMISTRY,
 }
 
+// FuelGauge impl block 1.
+// This impl block contains wrappers around the raw/unsafe Zephyr Fuel Gauge API.
+// These functions are private to this crate. The public/abstracted getters/setters (which wrap around these private functions) are located in FuelGauge impl block 2.
 impl FuelGauge {
     /// Constructor, used by the devicetree generated code.
     pub(crate) unsafe fn new(
@@ -116,7 +119,12 @@ impl FuelGauge {
             }
         )
     }
+}
 
+// FuelGauge impl block 2.
+// This impl block contains the main public getters/setters for FuelGauge.
+// They provide a type-safe way to get and set the fuel gauge props.
+impl FuelGauge {
     // u_TODO: Will probably want to make these function comments more descriptive in the future.
     //         Zephyr has docs for `enum fuel_gauge_prop_type`, where each of the enums has a comment
     //         about the units being returned + any extra info.
@@ -528,6 +536,64 @@ impl FuelGauge {
     }
 }
 
+/// This enum lists the possible states of the Fuel Gauge's `CAPACITY_MODE` bit.
+/// A state of `1` (true/CentiWatt) indicates that the FuelGauge API will report capacity information in cW or cWh as appropriate.
+/// A state of `0` (false/MilliAmp) means that the FuelGauge API will report capacity information in mA or mAh as appropriate.
+#[repr(u8)]
+pub enum CapacityMode {
+    /// Indicates that this API will report capacity information in cW or cWh as appropriate.
+    CentiWatt = 1,
+
+    /// Indicates that this API will report capacity information in mA or mAh as appropriate.
+    MilliAmp = 0,
+}
+
+// Cast `CapacityMode` to `bool`
+impl From<CapacityMode> for bool {
+    fn from(mode: CapacityMode) -> Self {
+        match mode {
+            CapacityMode::CentiWatt => true,
+            CapacityMode::MilliAmp => false,
+        }
+    }
+}
+
+// Cast `bool` to `CapacityMode`
+impl From<bool> for CapacityMode {
+    fn from(bit: bool) -> Self {
+        match bit {
+            true => CapacityMode::CentiWatt,
+            false => CapacityMode::MilliAmp,
+        }
+    }
+}
+
+// FuelGauge impl block 3.
+// This impl block provides wrappers to get and set the state of the `CAPACITY_MODE` bit.
+impl FuelGauge {
+    /// Returns the gauge's current `CapacityMode` state.
+    /// 
+    /// `CentiWatt` means that any capacity information returned by this API will be reported in units of cW or cWh as appropriate.
+    /// `MilliAmp` means that any capacity information returned by this API will be reported in units of mA or mAh as appropriate.
+    pub async fn capacity_mode(&mut self) -> crate::error::Result<CapacityMode> {
+        use embedded_batteries_async::smart_battery::SmartBattery;
+        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+        Ok(CapacityMode::from(capacity_mode))
+    }
+
+    /// Sets the gauge's current `CapacityMode` state.
+    /// 
+    /// `CentiWatt` means that any capacity information returned by this API will be reported in units of cW or cWh as appropriate.
+    /// `MilliAmp` means that any capacity information returned by this API will be reported in units of mA or mAh as appropriate.
+    pub async fn set_capacity_mode(&mut self, mode: CapacityMode) -> crate::error::Result<()> {
+        use embedded_batteries_async::smart_battery::SmartBattery;
+        let mut fields: BatteryModeFields = self.battery_mode().await?;
+        fields.set_capacity_mode(bool::from(mode));
+        self.set_battery_mode(fields).await
+    }
+}
+
+
 use embedded_batteries_async::smart_battery::{BatteryModeFields, ManufactureDate, Cycles, BatteryStatusFields, CapacityModeValue, SpecificationInfoFields, CapacityModeSignedValue, MilliVolts, Minutes, DeciKelvin, MilliAmpsSigned, Percent};
 use embedded_batteries_async::charger::MilliAmps;
 impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
@@ -538,36 +604,32 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
 
     async fn remaining_capacity_alarm(&mut self) -> Result<CapacityModeValue, Self::Error> {
         let value = self.sbs_remaining_capacity_alarm()?; // Returned in either mAh or 10mWh depending on the capacity_mode, according to Zephyr docs.
-        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+        let capacity_mode: CapacityMode = self.capacity_mode().await?;
 
-        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate.
-        // When false, the capacity information should be reported in mA or mAh as appropriate.
         match capacity_mode {
-            true => Ok(CapacityModeValue::CentiWattUnsigned(value)), // centiwatt == 10mW
-            false => Ok(CapacityModeValue::MilliAmpUnsigned(value)),
+            CapacityMode::CentiWatt => Ok(CapacityModeValue::CentiWattUnsigned(value)), // centiwatt == 10mW
+            CapacityMode::MilliAmp => Ok(CapacityModeValue::MilliAmpUnsigned(value)),
         }
     }
 
     #[allow(non_snake_case)]
     async fn set_remaining_capacity_alarm(&mut self, capacity: CapacityModeValue) -> Result<(), Self::Error> {
-        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+        let capacity_mode: CapacityMode = self.capacity_mode().await?;
 
-        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate.
-        // When false, the capacity information should be reported in mA or mAh as appropriate.
         let raw: u16 = match (capacity_mode, capacity) {
 
             // Good cases where the provided `capacity` is consistent with `capacity_mode`
-            (true, CapacityModeValue::CentiWattUnsigned(value)) => value, // centiwatt == 10mW
-            (false, CapacityModeValue::MilliAmpUnsigned(value)) => value,
+            (CapacityMode::CentiWatt, CapacityModeValue::CentiWattUnsigned(value)) => value, // centiwatt == 10mW
+            (CapacityMode::MilliAmp, CapacityModeValue::MilliAmpUnsigned(value)) => value,
 
             // Mismatch: `capacity_mode` expects mAh, but `capacity` is in 10mWh (cWh).
-            (false, CapacityModeValue::CentiWattUnsigned(_)) => {
+            (CapacityMode::MilliAmp, CapacityModeValue::CentiWattUnsigned(_)) => {
                 log::error!("In set_remaining_capacity_alarm: `capacity_mode` expected a value in mAh, but caller provided a value in cWh to the `capacity` parameter. Invalid.");
                 return Err(crate::error::Error(crate::raw::EINVAL));
             },
 
             // Mismatch: `capacity_mode` expects 10mWh (cWh), but `capacity` is in mAh.
-            (true, CapacityModeValue::MilliAmpUnsigned(_)) => {
+            (CapacityMode::CentiWatt, CapacityModeValue::MilliAmpUnsigned(_)) => {
                 log::error!("In set_remaining_capacity_alarm: `capacity_mode` expected a value in cWh, but caller provided a value in mAh to the `capacity` parameter. Invalid.");
                 return Err(crate::error::Error(crate::raw::EINVAL));
             },
@@ -590,35 +652,33 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
 
     async fn at_rate(&mut self) -> Result<CapacityModeSignedValue, Self::Error> {
         let value: i16 = self.sbs_at_rate()?; // Returned in either mA or 10mW depending on the capacity_mode, according to Zephyr docs.
-        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+        let capacity_mode: CapacityMode = self.capacity_mode().await?;
 
         // When true, the capacity information should be reported in 10mW or 10mWh as appropriate.
         // When false, the capacity information should be reported in mA or mAh as appropriate.
         match capacity_mode {
-            true => Ok(CapacityModeSignedValue::CentiWattSigned(value)), // centiwatt == 10mW
-            false => Ok(CapacityModeSignedValue::MilliAmpSigned(value)),
+            CapacityMode::CentiWatt => Ok(CapacityModeSignedValue::CentiWattSigned(value)), // centiwatt == 10mW
+            CapacityMode::MilliAmp => Ok(CapacityModeSignedValue::MilliAmpSigned(value)),
         }
     }
 
     async fn set_at_rate(&mut self, rate: CapacityModeSignedValue) -> Result<(), Self::Error> {
-        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+        let capacity_mode: CapacityMode = self.capacity_mode().await?;
 
-        // When true, the rate information should be reported in 10mW or 10mWh as appropriate.
-        // When false, the rate information should be reported in mA or mAh as appropriate.
         let raw: i16 = match (capacity_mode, rate) {
 
             // Good cases where the provided `rate` is consistent with `capacity_mode`
-            (true, CapacityModeSignedValue::CentiWattSigned(value)) => value, // centiwatt == 10mW
-            (false, CapacityModeSignedValue::MilliAmpSigned(value)) => value,
+            (CapacityMode::CentiWatt, CapacityModeSignedValue::CentiWattSigned(value)) => value, // centiwatt == 10mW
+            (CapacityMode::MilliAmp, CapacityModeSignedValue::MilliAmpSigned(value)) => value,
 
             // Mismatch: `capacity_mode` expects mAh, but `rate` is in 10mWh (cWh).
-            (false, CapacityModeSignedValue::CentiWattSigned(_)) => {
+            (CapacityMode::MilliAmp, CapacityModeSignedValue::CentiWattSigned(_)) => {
                 log::error!("In set_at_rate: `capacity_mode` expected a value in mAh, but caller provided a value in cWh to the `rate` parameter. Invalid.");
                 return Err(crate::error::Error(crate::raw::EINVAL));
             },
 
             // Mismatch: `capacity_mode` expects 10mWh (cWh), but `rate` is in mAh.
-            (true, CapacityModeSignedValue::MilliAmpSigned(_)) => {
+            (CapacityMode::CentiWatt, CapacityModeSignedValue::MilliAmpSigned(_)) => {
                 log::error!("In set_at_rate: `capacity_mode` expected a value in cWh, but caller provided a value in mAh to the `rate` parameter. Invalid.");
                 return Err(crate::error::Error(crate::raw::EINVAL));
             },
@@ -706,7 +766,7 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
     #[allow(non_snake_case)]
     async fn remaining_capacity(&mut self) -> Result<CapacityModeValue, Self::Error> {
         let uAh: u32 = FuelGauge::remaining_capacity(self)?; // Returned in uAh. Apparently, it's always uAh regardless of the CAPACITY_MODE bit, according to the Zephyr docs.
-        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+        let capacity_mode: CapacityMode = self.capacity_mode().await?;
 
         // We need to convert to mAh (from uAh) according to the trait method requirement.
         let mAh: u32 = uAh / 1000;
@@ -717,14 +777,12 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
             crate::error::Error(crate::raw::EINVAL)
         })?;
 
-        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate. (centiwatt == 10mW)
-        // When false, the capacity information should be reported in mA or mAh as appropriate.
         match capacity_mode {
-            // If false, the returned value is expected to be in mAh, so we don't need to do any conversions.
-            false => Ok(CapacityModeValue::MilliAmpUnsigned(mAh)),
+            // If `CapacityMode::MilliAmp`, the returned value is expected to be in mAh, so we don't need to do any conversions.
+            CapacityMode::MilliAmp => Ok(CapacityModeValue::MilliAmpUnsigned(mAh)),
 
-            // If true, the returned value is expected to be in cWh, so we need to convert from mAh to cWh.
-            true => {
+            // If `CapacityMode::CentiWatt`, the returned value is expected to be in cWh, so we need to convert from mAh to cWh.
+            CapacityMode::CentiWatt => {
                 // cWh = (mAh × uV) / 10_000_000
                 let uV: i32 = FuelGauge::voltage(self)?; // Returned in uV 
                 let cWh = (mAh as i64 * uV as i64) / 10_000_000;
@@ -741,7 +799,7 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
     #[allow(non_snake_case)]
     async fn full_charge_capacity(&mut self) -> Result<CapacityModeValue, Self::Error> {
         let uAh: u32 = FuelGauge::full_charge_capacity(self)?; // Returned in uAh. Apparently, it's always uAh regardless of the CAPACITY_MODE bit, according to the Zephyr docs.
-        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+        let capacity_mode: CapacityMode = self.capacity_mode().await?;
 
         // We need to convert to mAh (from uAh) according to the trait method requirement.
         let mAh: u32 = uAh / 1000;
@@ -752,14 +810,12 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
             crate::error::Error(crate::raw::EINVAL)
         })?;
 
-        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate. (centiwatt == 10mW)
-        // When false, the capacity information should be reported in mA or mAh as appropriate.
         match capacity_mode {
-            // If false, the returned value is expected to be in mAh, so we don't need to do any conversions.
-            false => Ok(CapacityModeValue::MilliAmpUnsigned(mAh)),
+            // If `CapacityMode::MilliAmp`, the returned value is expected to be in mAh, so we don't need to do any conversions.
+            CapacityMode::MilliAmp => Ok(CapacityModeValue::MilliAmpUnsigned(mAh)),
 
-            // If true, the returned value is expected to be in cWh, so we need to convert from mAh to cWh.
-            true => {
+            // If `CapacityMode::CentiWatt`, the returned value is expected to be in cWh, so we need to convert from mAh to cWh.
+            CapacityMode::CentiWatt => {
                 // cWh = (mAh × uV) / 10_000_000
                 let uV: i32 = FuelGauge::voltage(self)?; // Returned in uV 
                 let cWh = (mAh as i64 * uV as i64) / 10_000_000;
@@ -827,13 +883,11 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
 
     async fn design_capacity(&mut self) -> Result<CapacityModeValue, Self::Error> {
         let value: u16 = self.design_cap()?; // Returned in either mAh or 10mWh depending on the capacity_mode, according to Zephyr docs.
-        let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
+        let capacity_mode: CapacityMode = self.capacity_mode().await?;
 
-        // When true, the capacity information should be reported in 10mW or 10mWh as appropriate.
-        // When false, the capacity information should be reported in mA or mAh as appropriate.
         match capacity_mode {
-            true => Ok(CapacityModeValue::CentiWattUnsigned(value)), // centiwatt == 10mW
-            false => Ok(CapacityModeValue::MilliAmpUnsigned(value)),
+            CapacityMode::CentiWatt => Ok(CapacityModeValue::CentiWattUnsigned(value)), // centiwatt == 10mW
+            CapacityMode::MilliAmp => Ok(CapacityModeValue::MilliAmpUnsigned(value)),
         }
     }
 
@@ -878,3 +932,9 @@ impl embedded_batteries_async::smart_battery::Error for crate::error::Error {
         embedded_batteries_async::smart_battery::ErrorKind::Other
     }
 }
+
+// impl battery_service::controller for FuelGauge {
+//     async fn initialize(&mut self) -> Result<(), Self::ControllerError> {
+
+//     }
+// }
