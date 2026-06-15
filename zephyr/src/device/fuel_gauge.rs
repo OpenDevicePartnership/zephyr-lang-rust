@@ -528,7 +528,8 @@ impl FuelGauge {
     }
 }
 
-use embedded_batteries_async::smart_battery::{BatteryModeFields, ManufactureDate, Cycles, BatteryStatusFields, CapacityModeValue, SpecificationInfoFields, CapacityModeSignedValue, MilliVolts, Minutes, DeciKelvin, MilliAmps, MilliAmpsSigned, Percent};
+use embedded_batteries_async::smart_battery::{BatteryModeFields, ManufactureDate, Cycles, BatteryStatusFields, CapacityModeValue, SpecificationInfoFields, CapacityModeSignedValue, MilliVolts, Minutes, DeciKelvin, MilliAmpsSigned, Percent};
+use embedded_batteries_async::charger::MilliAmps;
 impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
 
     async fn battery_mode(&mut self) -> Result<BatteryModeFields, Self::Error> {
@@ -639,48 +640,51 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
     }
 
     async fn temperature(&mut self) -> Result<DeciKelvin, Self::Error> {
-        Ok(self.temperature()? as DeciKelvin)
+        Ok(FuelGauge::temperature(self)? as DeciKelvin)
     }
 
+    #[allow(non_snake_case)]
     async fn voltage(&mut self) -> Result<MilliVolts, Self::Error> {
-        let microvolts: i32 = FuelGauge::voltage(self)?; // FuelGauge::voltage(self) returns in uV
+        let uV: i32 = FuelGauge::voltage(self)?; // FuelGauge::voltage(self) returns in uV
 
         // We need to convert to mV according to the trait method requirement.
-        let millivolts: i32 = microvolts / 1000;
+        let mV: i32 = uV / 1000;
 
         // We also need to convert from `i32` to `u16`. In case we read a negative voltage or we run into overflow, print an error.
-        let result: u16 = u16::try_from(millivolts).map_err(|_| {
-            log::error!("Voltage out of u16 range: {}mV! Returning an error.", millivolts);
+        let result: u16 = u16::try_from(mV).map_err(|_| {
+            log::error!("Voltage out of u16 range: {}mV! Returning an error.", mV);
             crate::error::Error(crate::raw::EINVAL)
         })?;
 
         Ok(result as MilliVolts)
     }
 
+    #[allow(non_snake_case)]
     async fn current(&mut self) -> Result<MilliAmpsSigned, Self::Error> {
-        let microamps: i32 = FuelGauge::current(self)?; // FuelGauge::current(self) returns in uA
+        let uA: i32 = FuelGauge::current(self)?; // FuelGauge::current(self) returns in uA
 
         // We need to convert to mA according to the trait method requirement.
-        let milliamps: i32 = microamps / 1000;
+        let mA: i32 = uA / 1000;
 
         // We also need to convert from `i32` to `i16`. In case we run into overflow, print an error.
-        let result: i16 = i16::try_from(milliamps).map_err(|_| {
-            log::error!("Current out of i16 range: {}mA! Returning an error.", milliamps);
+        let result: i16 = i16::try_from(mA).map_err(|_| {
+            log::error!("Current out of i16 range: {}mA! Returning an error.", mA);
             crate::error::Error(crate::raw::EINVAL)
         })?;
 
         Ok(result as MilliAmpsSigned)
     }
 
+    #[allow(non_snake_case)]
     async fn average_current(&mut self) -> Result<MilliAmpsSigned, Self::Error> {
-        let microamps: i32 = self.avg_current()?; // self.avg_current returns in uA
+        let uA: i32 = self.avg_current()?; // self.avg_current returns in uA
 
         // We need to convert to mA according to the trait method requirement.
-        let milliamps: i32 = microamps / 1000;
+        let mA: i32 = uA / 1000;
 
         // We also need to convert from `i32` to `i16`. In case we run into overflow, print an error.
-        let result: i16 = i16::try_from(milliamps).map_err(|_| {
-            log::error!("Current out of i16 range: {}mA! Returning an error.", milliamps);
+        let result: i16 = i16::try_from(mA).map_err(|_| {
+            log::error!("Current out of i16 range: {}mA! Returning an error.", mA);
             crate::error::Error(crate::raw::EINVAL)
         })?;
 
@@ -699,6 +703,7 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
         Ok(FuelGauge::absolute_state_of_charge(self)? as Percent)
     }
 
+    #[allow(non_snake_case)]
     async fn remaining_capacity(&mut self) -> Result<CapacityModeValue, Self::Error> {
         let uAh: u32 = FuelGauge::remaining_capacity(self)?; // Returned in uAh. Apparently, it's always uAh regardless of the CAPACITY_MODE bit, according to the Zephyr docs.
         let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
@@ -733,6 +738,7 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
         }
     }
 
+    #[allow(non_snake_case)]
     async fn full_charge_capacity(&mut self) -> Result<CapacityModeValue, Self::Error> {
         let uAh: u32 = FuelGauge::full_charge_capacity(self)?; // Returned in uAh. Apparently, it's always uAh regardless of the CAPACITY_MODE bit, according to the Zephyr docs.
         let capacity_mode: bool = self.battery_mode().await?.capacity_mode();
@@ -780,6 +786,11 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
         Err(crate::error::Error(crate::raw::ENOTSUP)) // u_TODO: Zephyr API doesn't give us this as far as I can tell.
     }
 
+    async fn average_time_to_full(&mut self) -> Result<Minutes, Self::Error> {
+        Err(crate::error::Error(crate::raw::ENOTSUP)) // u_TODO: Zephyr API doesn't give us this as far as I can tell.
+    }
+
+    #[allow(non_snake_case)]
     async fn charging_current(&mut self) -> Result<MilliAmps, Self::Error> {
         let uA: u32 = self.chg_current()?;
         let mA: u32 = uA / 1000;
@@ -790,6 +801,7 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
         Ok(mA as MilliAmps)
     }
 
+    #[allow(non_snake_case)]
     async fn charging_voltage(&mut self) -> Result<MilliVolts, Self::Error> {
         let uV: u32 = self.chg_voltage()?;
         let mV: u32 = uV / 1000;
@@ -800,7 +812,7 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
         Ok(mV as MilliVolts)
     }
 
-    async fn battery_status(&mut self) -> Result<BatteryStatusField, Self::Error> {
+    async fn battery_status(&mut self) -> Result<BatteryStatusFields, Self::Error> {
         Ok(BatteryStatusFields::from_bits(self.fg_status()?))
     }
 
@@ -825,6 +837,7 @@ impl embedded_batteries_async::smart_battery::SmartBattery for FuelGauge {
         }
     }
 
+    #[allow(non_snake_case)]
     async fn design_voltage(&mut self) -> Result<MilliVolts, Self::Error> {
         let mV: u16 = self.design_volt()?; // Returned in mV if you can believe it
         Ok(mV as MilliVolts)
