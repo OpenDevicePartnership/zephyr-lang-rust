@@ -36,8 +36,6 @@ async fn battery_device_controller_task(battery: battery_service::wrapper::Wrapp
 #[embassy_executor::task]
 pub async fn update_data_task(service: BatteryService) {
 
-    log::info!("Inside update_data_task()"); // u_Note: REMOVE
-
     // Initialize the state machine
     if let Err(e) = battery_service::mock::init_state_machine(&service).await {
         log::error!("FG: Failed to init state machine: {:?}. Terminating this task...", e);

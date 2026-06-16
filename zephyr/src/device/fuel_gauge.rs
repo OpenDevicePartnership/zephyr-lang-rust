@@ -77,8 +77,6 @@ impl FuelGauge {
     pub(crate) fn get_prop(&self, prop: FuelGaugeProp) -> crate::error::Result<crate::raw::fuel_gauge_prop_val> {
         let mut buffer = core::mem::MaybeUninit::<crate::raw::fuel_gauge_prop_val>::uninit();
 
-        log::info!("inside get_prop()"); // u_Note: REMOVE
-
         crate::error::to_result_void(
             // SAFETY: - `self.device` lives for the entire duration of `self`.
             //         -  `prop` is a copy owned by this function.
@@ -939,7 +937,7 @@ impl battery_service::controller::Controller for FuelGauge {
     type ControllerError = crate::error::Error;
 
     async fn initialize(&mut self) -> Result<(), Self::ControllerError> {
-        self.set_capacity_mode(CapacityMode::CentiWatt).await
+        self.set_capacity_mode(CapacityMode::MilliAmp).await
     }
 
     async fn ping(&mut self) -> Result<(), Self::ControllerError> {

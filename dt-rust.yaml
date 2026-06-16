@@ -205,6 +205,7 @@
     - !Compatible
       names:
         - "sbs,sbs-gauge-new-api"
+        - "zephyr,fuel-gauge-emul"
       level: 0
   actions:
     - !Instance
