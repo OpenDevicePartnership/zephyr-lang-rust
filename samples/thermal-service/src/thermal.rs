@@ -58,7 +58,7 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
 
     static RESOURCES: static_cell::StaticCell<thermal_service::Resources<SensorService, FanService>> = static_cell::StaticCell::new();
     let resources = RESOURCES.init(thermal_service::Resources::default());
-    
+
     thermal_service::Service::init(resources, thermal_service::InitParams { sensors, fans })
 }
 

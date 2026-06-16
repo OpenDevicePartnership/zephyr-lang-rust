@@ -11,6 +11,7 @@ use static_cell::StaticCell;
 mod thermal;
 mod utils;
 mod time_alarm;
+mod battery;
 
 // Entry point into the Rust program from Zephyr.
 #[unsafe(no_mangle)]
@@ -42,6 +43,7 @@ embedded_services::relay::mctp::impl_odp_mctp_relay_handler!(
     RelayHandler;
     Thermal, 0x09, thermal_service_relay::ThermalServiceRelayHandler<crate::thermal::ThermalService>;
     TimeAlarm, 0x0B, time_alarm_service_relay::TimeAlarmServiceRelayHandler<crate::time_alarm::TimeAlarmService>;
+    Battery, 0x08, battery_service_relay::BatteryServiceRelayHandler<crate::battery::BatteryService>;
 );
 
 // Main embassy task to spawn all the child services.
@@ -54,12 +56,13 @@ async fn init(spawner: Spawner) {
     // Initialize services
     let thermal = crate::thermal::init(spawner).await;
     let time_alarm = crate::time_alarm::init(spawner).await;
-    // gonna put more here eventually
+    let battery = crate::battery::init(spawner).await;
 
     // Create relay handler for the above services
     let relay = RelayHandler::new(
         thermal_service_relay::ThermalServiceRelayHandler::new(thermal),
         time_alarm_service_relay::TimeAlarmServiceRelayHandler::new(time_alarm),
+        battery_service_relay::BatteryServiceRelayHandler::new(battery),
     );
     
     // Spawn all the different tasks.

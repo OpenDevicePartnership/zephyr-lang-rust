@@ -45,6 +45,7 @@ extern int errno;
 #include <zephyr/drivers/flash.h>
 #include <zephyr/drivers/pwm.h>
 #include <zephyr/drivers/rtc.h>
+#include <zephyr/drivers/fuel_gauge.h>
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/irq.h>

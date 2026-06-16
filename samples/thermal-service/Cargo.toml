@@ -15,7 +15,7 @@ crate-type = ["staticlib"]
 [dependencies]
 # Pinned to 0.7.0 to match the version used by the `zephyr` crate; mixing
 # versions duplicates `Spawner`/`SpawnToken` types and breaks `Executor::run`.
-embassy-executor = { version = "0.7.0", features = ["task-arena-size-2048"] }
+embassy-executor = { version = "0.7.0", features = ["task-arena-size-4096"] }
 embassy-futures = "0.1.1"
 embassy-sync = "0.8"
 embassy-time = { version = "0.5", features = ["tick-hz-10_000"] } # u_Note: tick-hz-10_000 is needed to match with zephyr. If this isn't here, something like Timer::after_secs(1) would actually wait for 100 seconds instead of 1 seconds. There should probably be some kind of way to do this manually so the embassy APIs work no matter what the Zephyr tick rate is.
@@ -30,8 +30,9 @@ uart-service = { git = "https://github.com/OpenDevicePartnership/embedded-servic
 zephyr = { version = "0.1.0", features = ["time-driver", "executor-zephyr"] }
 log = { version = "0.4.22" } # features = ["max_level_error", "release_max_level_error"]
 embedded-io-async = {version = "0.7.0"}
+embedded-batteries-async = {version = "0.3.4"}
 
-battery-service = { package = "battery-service", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+battery-service = { package = "battery-service", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main", features = ["mock"] }
 battery-service-interface = { package = "battery-service-interface", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
 battery-service-relay = { package = "battery-service-relay", git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
 

@@ -27,6 +27,8 @@ pub mod pwm_fan;
 pub mod uart;
 #[cfg(CONFIG_RTC)]
 pub mod rtc;
+#[cfg(CONFIG_FUEL_GAUGE)]
+pub mod fuel_gauge;
 
 // Allow dead code, because it isn't required for a given build to have any devices.
 /// Device uniqueness.
