@@ -97,3 +97,22 @@ As of right now, the zephyr-odp sample uses `thermal-service`, `uart-service`, `
 The temperature sensor is a TMP117, connected to the first four pins (10/SCL, 9/SDA, 8/3V3, 7/GND) on J28 (see the picture on page 29 of the eval board User Guide). It should be possible to use another I2C temperature sensor if you want to, but you'd have to edit the `ti_tmp11x` node in the `.overlay`, plus add your nwe sensor's Zephyr compatible to the `temperature-sensor` matcher in `dt-rust.yaml`.
 
 The PWM Fan is just a generic 5V DC Brushless Fan with four wires (5V, GND, PWM Control/Blue, and Tachometer/Yellow). The 5V and GND wires are connected to 5V0/8 and GND/7 respectively on J29 (see page 30 of the eval board User Guide). The PWM Control wire is connected to pin 4/P0_27 on J27 (see User Guide page 29), and the Tachometer wire is connected to pin "IO 0_16" (see User Guide page 21). Any generic PWM fan should be usable here without having to mess with the overlay or `dt-rust.yaml`.
+
+### TUI Setup
+
+If you haven't already, clone and build the ODP ec-test-tui project located [here](https://github.com/OpenDevicePartnership/odp-platform-common/tree/main/ec/test-tui). If you're using the workflow from the `./flash.sh` script (where you build in WSL but flash from Windows), you should build and run ec-test-tui from the Windows side.
+
+This TUI will serve as the MCTP host for the uart-service. If everything is working, the TUI should dispaly something like this once you flash:
+
+// put a image here on github
+
+Note: As of right now, the mock fuel gauge driver just sends out static battery data, so those numbers won't change.
+
+### Images of Set-up Board
+
+## Development
+
+This section contains some notes for exploring the code itself:
+- `samples/zephyr-odp` contains the app-layer code that actually sets up and starts the services.
+- The new Rust drivers are located in `zephyr/src/device/`.
+- There's a `./doc.sh` script that generates the project's Rust docs for you, and opens them in a browser. This is mainly helpful for WSL users.
