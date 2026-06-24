@@ -28,12 +28,12 @@ arrayvec = { version = "0.7.6", default-features = false }
 
 # Imports for pwm_fan.rs:
 embedded-fans-async = {version = "0.2.0"}
-thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", rev = "086c9efd7c58f06b6a6bc3f894832bbd2f5c8ec0" }
 
 # Imports for fuel_gauge.rs:
 embedded-batteries-async = {version = "0.3.4"}
-battery-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
-battery-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", branch = "main" }
+battery-service = { git = "https://github.com/OpenDevicePartnership/embedded-services", rev = "086c9efd7c58f06b6a6bc3f894832bbd2f5c8ec0" }
+battery-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", rev = "086c9efd7c58f06b6a6bc3f894832bbd2f5c8ec0" }
 embassy-time = "0.5"  # u_Note: Must match battery-service's version since Duration is in their public API
 
 # Imports for uart.rs:

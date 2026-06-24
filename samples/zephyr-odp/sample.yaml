@@ -6,7 +6,8 @@ common:
   tags: rust
   filter: CONFIG_RUST_SUPPORTED
   platform_allow:
-    - nrf52840dk/nrf52840
+    - nrf52840dk/nrf52840'
+    - 'mimxrt685_evk/mimxrt685s/cm33'
 tests:
   sample.rust.helloworld:
     tags: ODP
