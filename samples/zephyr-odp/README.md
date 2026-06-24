@@ -104,11 +104,14 @@ If you haven't already, clone and build the ODP ec-test-tui project located [her
 
 This TUI will serve as the MCTP host for the uart-service. If everything is working, the TUI should dispaly something like this once you flash:
 
-// put a image here on github
+<img width="1004" height="567" alt="image" src="https://github.com/user-attachments/assets/3c118772-99eb-4e66-8e88-5e9ad315ffe7" />
 
 Note: As of right now, the mock fuel gauge driver just sends out static battery data, so those numbers won't change.
 
 ### Images of Set-up Board
+
+<img width="50%" alt="IMG_5234" src="https://github.com/user-attachments/assets/f7bddfb8-9fc4-4d33-8bfc-54b63e7f71da"/>
+<img width="50%" alt="IMG_5235" src="https://github.com/user-attachments/assets/09bfa985-01f8-4e22-91ba-a83a77be8278"/>
 
 ## Development
 
