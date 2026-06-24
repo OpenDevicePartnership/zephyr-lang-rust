@@ -20,7 +20,7 @@ This section provides the information needed to clone and build this project for
 ### Setting up Environment
 To clone the project and set up your environment, run these commands:
 ```sh
-west init -m git@github.com:OpenDevicePartnership/zephyr-lang-rust.git --mr secure-ec-poc --mf ci-manifest.yml my-workspace
+west init -m git@github.com:OpenDevicePartnership/zephyr-lang-rust.git --mr secure-ec-poc --mf odp.yml my-workspace
 cd my-workspace
 west update
 west zephyr-export
