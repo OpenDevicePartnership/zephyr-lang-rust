@@ -8,6 +8,7 @@ common:
   platform_allow:
     - nrf52840dk/nrf52840'
     - 'mimxrt685_evk/mimxrt685s/cm33'
+    - 'qemu_cortex_m3'
 tests:
   sample.rust.helloworld:
     tags: ODP

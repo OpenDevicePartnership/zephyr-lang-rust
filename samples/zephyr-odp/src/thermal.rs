@@ -70,7 +70,7 @@ mod tmp11x {
     pub struct Sensor(zephyr::device::temperature_sensor::TemperatureSensor);
     impl Sensor {
         pub fn new() -> Self {
-            Self(zephyr::devicetree::labels::ti_tmp11x::get_instance().expect("Failed to call zephyr::devicetree::labels::ti_tmp11x::get_instance()"))
+            Self(zephyr::devicetree::labels::temperature_sensor_0::get_instance().expect("Failed to call zephyr::devicetree::labels::temperature_sensor_0::get_instance()"))
         }
     }
     impl thermal_service_interface::sensor::Driver for Sensor {} // Marker trait so Sensor can be used with thermal_service.

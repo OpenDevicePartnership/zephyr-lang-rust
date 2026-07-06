@@ -12,3 +12,6 @@ rust_cargo_application()
 
 # Compile the fuel gauge emulator driver
 target_sources(app PRIVATE drivers/fuel_gauge_emul.c)
+
+# Compile the PWM emulator driver
+target_sources(app PRIVATE drivers/pwm_emul.c)

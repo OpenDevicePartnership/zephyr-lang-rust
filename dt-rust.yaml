@@ -94,6 +94,7 @@
       names:
         - "ti,tmp11x_rs"
         - "ti,tmp11x"
+        - "fintek,f75303"
       level: 0
   actions:
     - !Instance
@@ -162,6 +163,7 @@
     - !Compatible
       names:
         - "nxp,lpc-usart" # u_Note: Should probably pull in more eventually but this is what i have
+        - "zephyr,uart-emul"
       level: 0
   actions:
     - !Instance

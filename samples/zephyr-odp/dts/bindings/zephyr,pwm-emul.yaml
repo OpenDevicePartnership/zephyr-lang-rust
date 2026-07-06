@@ -1,0 +1,24 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+    Emulated PWM controller for testing without hardware.
+
+compatible: "zephyr,pwm-emul"
+
+include: [pwm-controller.yaml, base.yaml]
+
+properties:
+  "#pwm-cells":
+    const: 3
+
+  frequency:
+    type: int
+    default: 1000000
+    description: |
+      Frequency of the emulated underlying timer, in Hz.
+
+pwm-cells:
+  - channel
+  - period
+  - flags
