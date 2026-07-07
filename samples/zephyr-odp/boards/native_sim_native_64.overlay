@@ -1,0 +1,57 @@
+/*
+ * Copyright (c) 2026
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Devicetree overlay for the zephyr-odp sample on native_sim/native/64.
+ *
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+&i2c0 {
+	temperature_sensor_0: f75303@4c {
+		compatible = "fintek,f75303";
+		reg = <0x4c>;
+	};
+
+	fuel_gauge: sbs-gauge@b {
+		compatible = "sbs,sbs-gauge-new-api";
+		reg = <0x0b>;
+		status = "okay";
+	};
+};
+
+/ {
+	tachometer: tachometer {
+		compatible = "zephyr,tach-gpio";
+		gpios = <&gpio0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		pulses-per-round = <2>;
+	};
+
+	pwm_emul0: pwm-emul {
+		status = "okay";
+		compatible = "zephyr,pwm-emul";
+		#pwm-cells = <3>;
+		frequency = <1000000>;
+	};
+	fan0: my-fan {
+		compatible = "pwm-fan";
+		pwms = <&pwm_emul0 7 40000 0>;
+		max-rpm = <5000>;
+		min-rpm = <0>;
+		min-start-rpm = <3000>;
+	};
+
+	rs_rtc0: rs-rtc {
+		compatible = "rs,rtc";
+		rtc = <&rtc>;
+		resolution-hz = <1>;
+	};
+
+	flexcomm0: uart-emul0 {
+		status = "okay";
+		compatible = "zephyr,uart-emul";
+		current-speed = <115200>;
+		loopback;
+	};
+};
