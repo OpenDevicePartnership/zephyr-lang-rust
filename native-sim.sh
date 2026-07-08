@@ -10,9 +10,14 @@ BUILD_DIR="${BUILD_DIR:-$(west topdir)/build-native}"
 pkill -f "$BUILD_DIR/zephyr/zephyr.exe" || true
 
 # native_sim/native/64 on a 64-bit host maps to the aarch64/x86_64 bare-metal
-# Rust target
+# Rust target (see CMakeLists.txt). Pick the one matching the host CPU.
+case "$(uname -m)" in
+    aarch64|arm64) RUST_TARGET="aarch64-unknown-none" ;;
+    x86_64|amd64)  RUST_TARGET="x86_64-unknown-none" ;;
+    *) echo "Unsupported host architecture: $(uname -m)" >&2; exit 1 ;;
+esac
 if command -v rustup >/dev/null 2>&1; then
-    rustup target add aarch64-unknown-none
+    rustup target add "$RUST_TARGET"
 fi
 
 # Build for native_sim (pass -p always via WEST_BUILD_ARGS for a pristine build).
