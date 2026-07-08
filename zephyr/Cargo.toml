@@ -28,7 +28,7 @@ arrayvec = { version = "0.7.6", default-features = false }
 
 # Imports for pwm_fan.rs:
 embedded-fans-async = {version = "0.2.0"}
-thermal-service-interface = { git = "https://github.com/bjackson312006/embedded-services", rev = "6495326afa639ec661fbc6175f9059dcdd45510a" }
+thermal-service-interface = { git = "https://github.com/OpenDevicePartnership/embedded-services", rev = "918fdad60a25357d9ab8e693916e40bef31d486d" }
 
 # Imports for fuel_gauge.rs:
 embedded-batteries-async = {version = "0.3.4"}
