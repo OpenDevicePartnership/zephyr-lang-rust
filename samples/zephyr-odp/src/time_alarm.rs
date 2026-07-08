@@ -5,20 +5,22 @@ pub type TimeAlarmService = time_alarm_service::Service<'static>;
 pub async fn init(spawner: embassy_executor::Spawner) -> TimeAlarmService {
     use static_cell::StaticCell;
 
+    const ERASED_NVRAM: u32 = u32::MAX;
+
     static TZ_STORAGE: StaticCell<time_alarm_service::mock::MockNvramStorage<'static>> = StaticCell::new();
-    let tz_storage = TZ_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(0));
+    let tz_storage = TZ_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(ERASED_NVRAM));
 
     static AC_EXP_STORAGE: StaticCell<time_alarm_service::mock::MockNvramStorage<'static>> = StaticCell::new();
-    let ac_exp_storage = AC_EXP_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(0));
+    let ac_exp_storage = AC_EXP_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(ERASED_NVRAM));
 
     static AC_POL_STORAGE: StaticCell<time_alarm_service::mock::MockNvramStorage<'static>> = StaticCell::new();
-    let ac_pol_storage = AC_POL_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(0));
+    let ac_pol_storage = AC_POL_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(ERASED_NVRAM));
 
     static DC_EXP_STORAGE: StaticCell<time_alarm_service::mock::MockNvramStorage<'static>> = StaticCell::new();
-    let dc_exp_storage = DC_EXP_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(0));
+    let dc_exp_storage = DC_EXP_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(ERASED_NVRAM));
 
     static DC_POL_STORAGE: StaticCell<time_alarm_service::mock::MockNvramStorage<'static>> = StaticCell::new();
-    let dc_pol_storage = DC_POL_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(0));
+    let dc_pol_storage = DC_POL_STORAGE.init(time_alarm_service::mock::MockNvramStorage::new(ERASED_NVRAM));
 
     static RTC_DRIVER: StaticCell<zephyr::device::rtc::Rtc> = StaticCell::new();
     let rtc_driver = RTC_DRIVER.init(zephyr::devicetree::rs_rtc::get_instance().expect("Failed to call zephyr::devicetree::rs_rtc::get_instance()"));

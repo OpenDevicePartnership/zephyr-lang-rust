@@ -3,6 +3,9 @@
 
 #![no_std]
 
+#![allow(unused_variables)]
+#![allow(dead_code)]
+
 use core::ffi::c_int;
 use embassy_executor::Spawner;
 use log::info;
@@ -67,6 +70,16 @@ async fn init(spawner: Spawner) {
     
     // Spawn all the different tasks.
     spawner.spawn(uart_service(relay)).expect("Failed to spawn uart_service()");
+    spawner.spawn(heartbeat()).expect("Failed to spawn heartbeat()");
+}
+
+#[embassy_executor::task]
+async fn heartbeat() {
+    use embassy_time::Timer;
+    loop {
+        log::info!("Heartbeat");
+        Timer::after_secs(1).await;
+    }
 }
 
 // UART service. Spawns out the thermal, battery, and timer services.
@@ -74,7 +87,7 @@ async fn init(spawner: Spawner) {
 async fn uart_service(relay: RelayHandler) {
     static UART_SERVICE: StaticCell<uart_service::MctpSerialService<RelayHandler>> = StaticCell::new();
     let uart_service = UART_SERVICE.init(uart_service::MctpSerialService::default_mctp_serial(relay).unwrap());
-    let uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::flexcomm0::get_instance().unwrap();
+    let uart_driver: zephyr::device::uart::Uart = zephyr::devicetree::labels::cool_uart::get_instance().unwrap();
     info!("Starting uart_service::task::uart_service()...");
     let Err(e) = uart_service::task::uart_service(uart_service, uart_driver).await;
     info!("After uart_service::task::uart_service()");

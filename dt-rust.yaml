@@ -164,6 +164,7 @@
       names:
         - "nxp,lpc-usart" # u_Note: Should probably pull in more eventually but this is what i have
         - "zephyr,uart-emul"
+        - "zephyr,native-pty-uart"
       level: 0
   actions:
     - !Instance

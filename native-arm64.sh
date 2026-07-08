@@ -6,6 +6,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${BUILD_DIR:-$(west topdir)/build-native}"
 
+# Kill any native_sim instances left running from previous runs.
+pkill -f "$BUILD_DIR/zephyr/zephyr.exe" || true
+
 # native_sim/native/64 on a 64-bit host maps to the aarch64/x86_64 bare-metal
 # Rust target
 if command -v rustup >/dev/null 2>&1; then

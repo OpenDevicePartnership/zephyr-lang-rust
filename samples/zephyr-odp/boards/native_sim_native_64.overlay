@@ -47,11 +47,8 @@
 		rtc = <&rtc>;
 		resolution-hz = <1>;
 	};
+};
 
-	flexcomm0: uart-emul0 {
-		status = "okay";
-		compatible = "zephyr,uart-emul";
-		current-speed = <115200>;
-		loopback;
-	};
+cool_uart: &uart1 {
+	status = "okay";
 };
