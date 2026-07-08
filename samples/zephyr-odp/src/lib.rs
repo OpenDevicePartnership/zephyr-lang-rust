@@ -70,16 +70,6 @@ async fn init(spawner: Spawner) {
     
     // Spawn all the different tasks.
     spawner.spawn(uart_service(relay)).expect("Failed to spawn uart_service()");
-    spawner.spawn(heartbeat()).expect("Failed to spawn heartbeat()");
-}
-
-#[embassy_executor::task]
-async fn heartbeat() {
-    use embassy_time::Timer;
-    loop {
-        log::info!("Heartbeat");
-        Timer::after_secs(1).await;
-    }
 }
 
 // UART service. Spawns out the thermal, battery, and timer services.
