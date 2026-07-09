@@ -3,9 +3,6 @@
 
 #![no_std]
 
-#![allow(unused_variables)]
-#![allow(dead_code)]
-
 use core::ffi::c_int;
 use embassy_executor::Spawner;
 use log::info;
