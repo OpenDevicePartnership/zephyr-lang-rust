@@ -1,8 +1,0 @@
-# Copyright (c) 2024 Blake Smith
-# SPDX-License-Identifier: Apache-2.0
-
-description: Emulated fuel gauge device for testing
-
-compatible: "zephyr,fuel-gauge-emul"
-
-include: fuel-gauge.yaml
