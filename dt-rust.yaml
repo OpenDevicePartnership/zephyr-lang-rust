@@ -158,7 +158,7 @@
 
 # Matcher for `Uart` from uart.rs.
 - name: uart
-  cfg: CONFIG_SERIAL
+  cfg: CONFIG_UART_ASYNC_API
   rules:
     - !Compatible
       names:
