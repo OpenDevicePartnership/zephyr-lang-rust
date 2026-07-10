@@ -53,6 +53,10 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
         ) {
             Ok(1) => Ok(true),  // An IRQ is pending.
             Ok(0) => Ok(false), // In IRQ is not pending.
+            Ok(value) => {
+                log::error!("uart_irq_is_pending() succeeded, but returned a non-boolean value: {}. This should not be possible, and indicates that Zephyr's interrupt-driven UART API may have changed? So, treating this as an error.", value);
+                return Err(());
+            },
             Err(Error(crate::raw::ENOSYS)) => {
                 log::error!("uart_irq_is_pending() failed with ENOSYS: This function is not implemented.");
                 return Err(());
@@ -76,6 +80,10 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
         ) {
             Ok(1) => Ok(true),  // A received char is ready.
             Ok(0) => Ok(false), // A received char is not ready.
+            Ok(value) => {
+                log::error!("uart_irq_rx_ready() succeeded, but returned a non-boolean value: {}. This should not be possible, and indicates that Zephyr's interrupt-driven UART API may have changed? So, treating this as an error.", value);
+                return Err(());
+            },
             Err(Error(crate::raw::ENOSYS)) => {
                 log::error!("uart_irq_rx_ready() failed with ENOSYS: This function is not implemented.");
                 return Err(());
@@ -359,7 +367,6 @@ impl embedded_io_async::Write for Uart {
             let ringbuffer = unsafe { &*self.data.tx_ringbuffer.get() };
 
             // If nothing's left in the ringbuffer, then everything we buffered has been handed to the FIFO and we're flushed.
-            // Note: a byte or two may still be physically shifting out of the FIFO/shift register at this point.
             if ringbuffer.len() == 0 {
                 return core::task::Poll::Ready(Ok(()));
             }
