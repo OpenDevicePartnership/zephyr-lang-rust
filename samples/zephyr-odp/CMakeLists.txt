@@ -10,5 +10,6 @@ find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(odp_thermal_service)
 rust_cargo_application()
 
-# Compile the fuel gauge emulator driver
+# Compile the C mock drivers
 target_sources(app PRIVATE drivers/fuel_gauge_emul.c)
+target_sources(app PRIVATE drivers/pwm_emul.c)
