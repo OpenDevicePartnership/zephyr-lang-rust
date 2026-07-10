@@ -6,7 +6,7 @@
  */
 
 &flexcomm2 {
-	ti_tmp11x: ti_tmp11x@48 {
+	u_temperature_sensor: ti_tmp11x@48 {
 		compatible = "ti,tmp11x";
 		reg = <0x48>;
 		#address-cells = <1>;
@@ -59,4 +59,8 @@
         rtc = <&rtc_emul>;       /* phandle to the real RTC */
         resolution-hz = <1>;     /* 1 Hz resolution */
     };
+};
+
+u_uart: &flexcomm0 {
+	status = "okay";
 };
