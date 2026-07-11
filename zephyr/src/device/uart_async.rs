@@ -308,6 +308,11 @@ unsafe extern "C" fn uart_callback(_device: *const crate::raw::device, event: *m
 /// CONFIG_UART_ASYNC_API=y
 /// ```
 /// 
+/// To prevent collisions with other UART APIs, it may also be a good idea to explicitly disable the interrupt-driven API:
+/// ```kconfig
+/// CONFIG_UART_INTERRUPT_DRIVEN=n
+/// ```
+/// 
 /// If needed, you can also disable Zephyr's UART logging if those messages would collide with your traffic:
 /// ```kconfig
 /// CONFIG_UART_CONSOLE=n
