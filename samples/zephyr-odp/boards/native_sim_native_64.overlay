@@ -49,6 +49,6 @@
 	};
 };
 
-u_uart: &uart1 {
+app_uart: &uart1 {
 	status = "okay";
 };
