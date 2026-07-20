@@ -22,43 +22,50 @@ unsafe impl Sync for UartStatic {}
 impl UartStatic {
     pub(crate) const fn new() -> Self {
         Self {
-            rx_ringbuffer:  UnsafeCell::new(heapless::spsc::Queue::new()),
+            rx_ringbuffer: UnsafeCell::new(heapless::spsc::Queue::new()),
             rx_waker: embassy_sync::waitqueue::AtomicWaker::new(),
 
-            tx_ringbuffer:  UnsafeCell::new(heapless::spsc::Queue::new()),
+            tx_ringbuffer: UnsafeCell::new(heapless::spsc::Queue::new()),
             tx_waker: embassy_sync::waitqueue::AtomicWaker::new(),
         }
     }
 }
 
 // Uart callback. This function signiature has been taken from the uart_callback_set() docs.
-unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data: *mut core::ffi::c_void) {
+unsafe extern "C" fn uart_callback(
+    device: *const crate::raw::device,
+    user_data: *mut core::ffi::c_void,
+) {
     use crate::error::{to_result, Error};
 
     let state = &*(user_data as *const UartStatic);
-    if handle_interrupt(device, state).is_err() { return; }
+    if handle_interrupt(device, state).is_err() {
+        return;
+    }
 
     fn handle_interrupt(device: *const crate::raw::device, state: &UartStatic) -> Result<(), ()> {
         /// Helper to check if an IRQ is pending
         fn is_irq_pending(device: *const crate::raw::device) -> Result<bool, ()> {
             match to_result(
                 // SAFETY: `device` is a valid UART device pointer for the duration of this call.
-                unsafe { crate::raw::uart_irq_is_pending(device) }
+                unsafe { crate::raw::uart_irq_is_pending(device) },
             ) {
                 Ok(1) => Ok(true),  // An IRQ is pending.
                 Ok(0) => Ok(false), // In IRQ is not pending.
                 Ok(value) => {
                     log::error!("uart_irq_is_pending() succeeded, but returned a non-boolean value: {}. This should not be possible, and indicates that Zephyr's interrupt-driven UART API may have changed? So, treating this as an error.", value);
                     Err(())
-                },
+                }
                 Err(Error(crate::raw::ENOSYS)) => {
                     log::error!("uart_irq_is_pending() failed with ENOSYS: This function is not implemented.");
                     Err(())
-                },
+                }
                 Err(Error(crate::raw::ENOTSUP)) => {
-                    log::error!("uart_irq_is_pending() failed with ENOTSUP: This API is not enabled.");
+                    log::error!(
+                        "uart_irq_is_pending() failed with ENOTSUP: This API is not enabled."
+                    );
                     Err(())
-                },
+                }
                 Err(e) => {
                     log::error!("uart_irq_is_pending() failed with Zephyr errno {}.", e);
                     Err(())
@@ -70,29 +77,33 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
         fn is_rx_ready(device: *const crate::raw::device) -> Result<bool, ()> {
             match to_result(
                 // SAFETY: `device` is a valid UART device pointer for the duration of this call.
-                unsafe { crate::raw::uart_irq_rx_ready(device) }
+                unsafe { crate::raw::uart_irq_rx_ready(device) },
             ) {
                 Ok(1) => Ok(true),  // A received char is ready.
                 Ok(0) => Ok(false), // A received char is not ready.
                 Ok(value) => {
                     log::error!("uart_irq_rx_ready() succeeded, but returned a non-boolean value: {}. This should not be possible, and indicates that Zephyr's interrupt-driven UART API may have changed? So, treating this as an error.", value);
                     Err(())
-                },
+                }
                 Err(Error(crate::raw::ENOSYS)) => {
-                    log::error!("uart_irq_rx_ready() failed with ENOSYS: This function is not implemented.");
+                    log::error!(
+                        "uart_irq_rx_ready() failed with ENOSYS: This function is not implemented."
+                    );
                     Err(())
-                },
+                }
                 Err(Error(crate::raw::ENOTSUP)) => {
-                    log::error!("uart_irq_rx_ready() failed with ENOTSUP: This API is not enabled.");
+                    log::error!(
+                        "uart_irq_rx_ready() failed with ENOTSUP: This API is not enabled."
+                    );
                     Err(())
-                },
+                }
                 Err(e) => {
                     log::error!("uart_irq_rx_ready() failed with Zephyr errno {}.", e);
                     Err(())
                 }
             }
         }
-        
+
         /// Helper to read from the FIFO. Reads back a single character (returned here as a Option<u8>).
         fn fifo_read(device: *const crate::raw::device) -> Result<Option<u8>, ()> {
             let mut character: u8 = 0;
@@ -100,7 +111,7 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
                 // SAFETY:
                 // `character` is large enough to hold one byte. If `uart_fifo_read()` wrutes nire than that
                 // into `charater` (which it shouldn't per its contract), then we print out an error and exit the callback.
-                unsafe { crate::raw::uart_fifo_read(device, &mut character, 1) }
+                unsafe { crate::raw::uart_fifo_read(device, &mut character, 1) },
             ) {
                 Ok(1) => Ok(Some(character)),
                 Ok(0) => Ok(None),
@@ -109,13 +120,15 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
                     Err(())
                 }
                 Err(Error(crate::raw::ENOSYS)) => {
-                    log::error!("uart_fifo_read() failed with -ENOSYS: This function is not implemented.");
+                    log::error!(
+                        "uart_fifo_read() failed with -ENOSYS: This function is not implemented."
+                    );
                     Err(())
-                },
+                }
                 Err(Error(crate::raw::ENOTSUP)) => {
                     log::error!("uart_fifo_read() failed with -ENOTSUP: This API is not enabled.");
                     Err(())
-                },
+                }
                 Err(e) => {
                     log::error!("uart_fifo_read() failed with Zephyr errno {}.", e);
                     Err(())
@@ -127,18 +140,20 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
         fn is_tx_ready(device: *const crate::raw::device) -> Result<Option<usize>, ()> {
             match to_result(
                 // SAFETY: `device` is a valid UART device pointer for the duration of this call.
-                unsafe { crate::raw::uart_irq_tx_ready(device) }
+                unsafe { crate::raw::uart_irq_tx_ready(device) },
             ) {
                 Ok(0) => Ok(None),
                 Ok(n) => Ok(Some(n as usize)),
                 Err(Error(crate::raw::ENOSYS)) => {
                     log::error!("uart_irq_tx_ready() failed with -ENOSYS: This function is not implemented.");
                     Err(())
-                },
+                }
                 Err(Error(crate::raw::ENOTSUP)) => {
-                    log::error!("uart_irq_tx_ready() failed with -ENOTSUP: This API is not enabled.");
+                    log::error!(
+                        "uart_irq_tx_ready() failed with -ENOTSUP: This API is not enabled."
+                    );
                     Err(())
-                },
+                }
                 Err(e) => {
                     log::error!("uart_irq_tx_ready() failed with Zephyr errno {}.", e);
                     Err(())
@@ -147,29 +162,31 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
         }
 
         /// Helper to write a single character into the TX FIFO. Returns `true` if the byte was written, and `false` if it wasn't.
-        /// 
+        ///
         /// Note: `bool` is basically just an error code here, but I wanted to separate the "did it accept our character" indicator from the
         /// actual Zephyr errors that cause the whole callback to return via `?`. This is probably not the most idiomatic
         /// but since this function's still in FFI land who cares
         fn fifo_fill(device: *const crate::raw::device, character: u8) -> Result<bool, ()> {
             match to_result(
                 // SAFETY: `device` is a valid UART device pointer for the duration of this call.
-                unsafe { crate::raw::uart_fifo_fill(device, &character, 1) }
+                unsafe { crate::raw::uart_fifo_fill(device, &character, 1) },
             ) {
                 Ok(1) => Ok(true),
                 Ok(0) => Ok(false),
                 Ok(_) => {
                     log::error!("uart_fifo_fill() somehow wrote in more bytes than we requested. That should not be possible.");
                     Err(())
-                },
+                }
                 Err(Error(crate::raw::ENOSYS)) => {
-                    log::error!("uart_fifo_fill() failed with -ENOSYS: This function is not implemented.");
+                    log::error!(
+                        "uart_fifo_fill() failed with -ENOSYS: This function is not implemented."
+                    );
                     Err(())
-                },
+                }
                 Err(Error(crate::raw::ENOTSUP)) => {
                     log::error!("uart_fifo_fill() failed with -ENOTSUP: This API is not enabled.");
                     Err(())
-                },
+                }
                 Err(e) => {
                     log::error!("uart_fifo_fill() failed with Zephyr errno {}.", e);
                     Err(())
@@ -180,12 +197,16 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
         // Start processing interrupts in the ISR.
         // According to Zephyr docs you need to call this as the first thing in the ISR before doing other stuff
         // SAFETY: `device` is a valid UART device pointer for the duration of this call.
-        unsafe { crate::raw::uart_irq_update(device); }
+        unsafe {
+            crate::raw::uart_irq_update(device);
+        }
 
         // Loop until there's no pending IRQs left to process
         loop {
             // If no IRQ is pending we can exit out of the callback
-            if !is_irq_pending(device)? { return Ok(()); }
+            if !is_irq_pending(device)? {
+                return Ok(());
+            }
 
             // Handle RX
             while is_rx_ready(device)? {
@@ -227,7 +248,9 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
                 // Important: we need to re-enable the TX IRQ in the write() function after we enqueue stuff to the ringbuffer
                 if ringbuffer.is_empty() {
                     // SAFETY: `device` is a valid UART device pointer for the duration of this call.
-                    unsafe { crate::raw::uart_irq_tx_disable(device); }
+                    unsafe {
+                        crate::raw::uart_irq_tx_disable(device);
+                    }
                 }
                 state.tx_waker.wake();
             }
@@ -237,42 +260,42 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
 
 /// A UART peripheral, using Zephyr's interrupt-driven UART API.
 /// (This is a wrapper around the `struct device` in Zephyr that represents a UART controller. This driver utilizes Zephyr's interrupt-driven UART API.)
-/// 
+///
 /// # Using This Struct From The Devicetree:
-/// 
+///
 /// Unlike externally-wired devices (e.g. a sensor), a UART is usually
 /// an on-chip peripheral that is already declared in the board's `.dts` file with the
 /// vendor-specific compatible (`nxp,lpc-usart`, `nordic,nrf-uarte`, `raspberrypi,pico-uart`,
-/// etc.). So, you normally don't add a new devicetree node yourself to use this driver. You 
+/// etc.). So, you normally don't add a new devicetree node yourself to use this driver. You
 /// should just be able to reference the one your board already provides by its label (e.g. `uart0`, `flexcomm0`, `usart1`). If
 /// you have multiple targets in your project, you might want to define a geneirc `app_uart` (or similar) label across all of your devicetree
 /// files so you don't have to change you Rust code between targets.
-/// 
+///
 /// For example, if my chip had a UART peripheral called `app_uart` in the devicetree, I'd retrieve an instance of it like:
 /// ```rust
 /// let mut uart = zephyr::devicetree::labels::app_uart::get_instance().unwrap();
 /// ```
-/// 
+///
 /// You'll also want to enable serial and the Zephyr UART interrupt-driven API in your prj.conf:
 /// ```kconfig
 /// CONFIG_SERIAL=y
 /// CONFIG_UART_INTERRUPT_DRIVEN=y
 /// ```
-/// 
+///
 /// To prevent collisions with other UART APIs, it may also be a good idea to explicitly disable the async API:
 /// ```kconfig
 /// CONFIG_UART_ASYNC_API=n
 /// ```
-/// 
-/// 
+///
+///
 /// If needed, you can also disable Zephyr's UART logging if those messages would collide with your traffic:
 /// ```kconfig
 /// CONFIG_UART_CONSOLE=n
 /// CONFIG_LOG_BACKEND_UART=n
 /// ```
-/// 
+///
 pub struct Uart {
-    device: *const crate::raw::device,    // The underlying device itself.
+    device: *const crate::raw::device, // The underlying device itself.
     pub(crate) data: &'static UartStatic, // Our associated data, used for callbacks.
 }
 
@@ -284,12 +307,16 @@ impl Uart {
         device: *const crate::raw::device,
     ) -> Option<Uart> {
         // Make sure this instance doesn't already exist.
-        if !unique.once() { return None; }
+        if !unique.once() {
+            return None;
+        }
 
         // Register the UART callback via uart_irq_callback_user_data_set()
-        if let Err(e) = crate::error::to_result_void(
-            crate::raw::uart_irq_callback_user_data_set(device, Some(uart_callback), data as *const UartStatic as *mut core::ffi::c_void),
-        ) {
+        if let Err(e) = crate::error::to_result_void(crate::raw::uart_irq_callback_user_data_set(
+            device,
+            Some(uart_callback),
+            data as *const UartStatic as *mut core::ffi::c_void,
+        )) {
             match e.0 {
                 crate::raw::ENOSYS => log::error!("uart_irq_callback_user_data_set() returned -ENOSYS: not supported by the device."),
                 crate::raw::ENOTSUP => log::error!("uart_irq_callback_user_data_set() returned -ENOTSUP: API not enabled."),
@@ -311,7 +338,6 @@ impl embedded_io_async::ErrorType for Uart {
 
 impl embedded_io_async::Read for Uart {
     async fn read(&mut self, buf: &mut [u8]) -> Result<usize, Self::Error> {
-
         if buf.is_empty() {
             return Ok(0);
         }
@@ -325,10 +351,16 @@ impl embedded_io_async::Read for Uart {
             // either our ringbuffer is completely empty or the user's `buf` is completely full.
             let mut n = 0;
             for byte in buf.iter_mut() {
-                if let Some(b) = ringbuffer.dequeue() { *byte = b; n += 1; }
-                else { break; }
+                if let Some(b) = ringbuffer.dequeue() {
+                    *byte = b;
+                    n += 1;
+                } else {
+                    break;
+                }
             }
-            if n > 0 { return core::task::Poll::Ready(Ok(n)); } // Return success, indicating how many bytes we drained. If we didn't drain any bytes (meaning the ringbuffer was empty), fall through to the below case.
+            if n > 0 {
+                return core::task::Poll::Ready(Ok(n));
+            } // Return success, indicating how many bytes we drained. If we didn't drain any bytes (meaning the ringbuffer was empty), fall through to the below case.
 
             // If we get here, we our ringbuffer was empty so we didn't drain anything.
             // So, register the waker so that whenever there ARE bytes to drain, this task gets woken up to finish its job.
@@ -346,7 +378,6 @@ impl embedded_io_async::Read for Uart {
 
 impl embedded_io_async::Write for Uart {
     async fn write(&mut self, buf: &[u8]) -> Result<usize, Self::Error> {
-
         if buf.is_empty() {
             return Ok(0);
         }
@@ -359,28 +390,36 @@ impl embedded_io_async::Write for Uart {
             // Basically just continuously move bytes from the user's `buf` into our ringbuffer until either our ringbuffer is completely full or the user's `buf` has been completely consumed.
             let mut n = 0;
             for &byte in buf.iter() {
-            if ringbuffer.enqueue(byte).is_err() { break; }
+                if ringbuffer.enqueue(byte).is_err() {
+                    break;
+                }
                 n += 1;
             }
-            if n > 0 { return core::task::Poll::Ready(n); } // Return success, indicating how many bytes we enqueued. However, if we didn't enqueue any bytes (meaning the ringbuffer was full), fall through to the below case.
+            if n > 0 {
+                return core::task::Poll::Ready(n);
+            } // Return success, indicating how many bytes we enqueued. However, if we didn't enqueue any bytes (meaning the ringbuffer was full), fall through to the below case.
 
             // If we get here, our ringbuffer was full so we couldn't enqueue anything. So, register the waker so that whenever there IS space to enqueue, this task gets woken up to finish its job.
             self.data.tx_waker.register(cx.waker()); // We have to register this waker before the final check (i.e., before we know if we will return core::task::Poll::Pending or not) because the ISR might drain a byte from the full buffer WHILE we are doing the check.
-            if ringbuffer.enqueue(buf[0]).is_ok() { core::task::Poll::Ready(1) }
-            else { core::task::Poll::Pending }
+            if ringbuffer.enqueue(buf[0]).is_ok() {
+                core::task::Poll::Ready(1)
+            } else {
+                core::task::Poll::Pending
+            }
         })
         .await;
 
         // Now that there are bytes in the TX ringbuffer, (re-)enable the TX IRQ so the callback drains them into the FIFO.
         // The callback disables the TX IRQ once the ringbuffer is empty, so we have to re-enable it here every time we enqueue.
         // SAFETY: `self.device` is a valid UART device pointer for the lifetime of `self`.
-        unsafe { crate::raw::uart_irq_tx_enable(self.device); }
+        unsafe {
+            crate::raw::uart_irq_tx_enable(self.device);
+        }
 
         Ok(n)
     }
 
     async fn flush(&mut self) -> Result<(), Self::Error> {
-
         core::future::poll_fn(|cx| {
             // SAFETY: exclusive consumer-side access to the ringbuffer's "is empty" view via &mut self.
             // The callback, who's the producer of "empty" as we understand it, only changes len() downward (never upward).
