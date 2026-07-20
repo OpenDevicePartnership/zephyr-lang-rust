@@ -207,18 +207,14 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
             if is_tx_ready(device)?.is_some() {
                 // SAFETY: `state` is a valid UartState pointer for the duration of this call.
                 let ringbuffer = unsafe { &mut *state.tx_ringbuffer.get() };
-                loop {
-                    let Some(&byte) = ringbuffer.peek() else { break }; // Nothing left
-                    
+                while let Some(&byte) = ringbuffer.peek() {
                     // Fill one byte and check if it was accepted
                     if fifo_fill(device, byte)? {
                         // it was accepted so we don't need that byte anymore
-                        if ringbuffer.dequeue()
-                        .is_none() {
+                        if ringbuffer.dequeue().is_none() {
                             // if `None` was returned, then nothing got dequeued? This shouldn't be possible due to the `break` if
                             // nothing was returned from .peek() but print out an error just in case
                             log::error!("ringbuffer.dequeue() failed: Returned `None`. This shouldn't be possible at this point?");
-                            return Err(());
                         }
                     } else {
                         // if fifo_fill() returns `false` then our byte wasn't accepted, meaning the fifo is full. So, we're going to break
@@ -229,7 +225,7 @@ unsafe extern "C" fn uart_callback(device: *const crate::raw::device, user_data:
 
                 // If we get here then we've drained the loop. So, stop the TX IRQ (or it will keep firing forever)
                 // Important: we need to re-enable the TX IRQ in the write() function after we enqueue stuff to the ringbuffer
-                if ringbuffer.len() == 0 {
+                if ringbuffer.is_empty() {
                     // SAFETY: `device` is a valid UART device pointer for the duration of this call.
                     unsafe { crate::raw::uart_irq_tx_disable(device); }
                 }
@@ -328,23 +324,20 @@ impl embedded_io_async::Read for Uart {
             // Basically just continuously move bytes from our ringbuffer into the user's `buf` until
             // either our ringbuffer is completely empty or the user's `buf` is completely full.
             let mut n = 0;
-            while n < buf.len() {
-                match ringbuffer.dequeue() {
-                    Some(byte) => { buf[n] = byte; n += 1; }
-                    None => break,
-                }
+            for byte in buf.iter_mut() {
+                if let Some(b) = ringbuffer.dequeue() { *byte = b; n += 1; }
+                else { break; }
             }
-            if n > 0 {return core::task::Poll::Ready(Ok(n));} // Return success, indicating how many bytes we drained. However, if we didn't drain any bytes (meaning the ringbuffer was empty), fall through to the below case.
+            if n > 0 { return core::task::Poll::Ready(Ok(n)); } // Return success, indicating how many bytes we drained. If we didn't drain any bytes (meaning the ringbuffer was empty), fall through to the below case.
 
             // If we get here, we our ringbuffer was empty so we didn't drain anything.
             // So, register the waker so that whenever there ARE bytes to drain, this task gets woken up to finish its job.
             self.data.rx_waker.register(cx.waker()); // We have to register this waker before the final check (i.e., before we know if we will return core::task::Poll::Pending or not) because the ISR might place a byte in the empty buffer WHILE we are doing the check.
-            match ringbuffer.dequeue() {
-                Some(byte) => {
-                    buf[0] = byte;
-                    core::task::Poll::Ready(Ok(1))
-                }
-                None => core::task::Poll::Pending,
+            if let Some(byte) = ringbuffer.dequeue() {
+                buf[0] = byte;
+                core::task::Poll::Ready(Ok(1))
+            } else {
+                core::task::Poll::Pending
             }
         })
         .await
@@ -365,18 +358,16 @@ impl embedded_io_async::Write for Uart {
             // Enqueue as many bytes from `buf` as will fit.
             // Basically just continuously move bytes from the user's `buf` into our ringbuffer until either our ringbuffer is completely full or the user's `buf` has been completely consumed.
             let mut n = 0;
-            while n < buf.len() {
-                if ringbuffer.enqueue(buf[n]).is_err() { break; }
+            for &byte in buf.iter() {
+            if ringbuffer.enqueue(byte).is_err() { break; }
                 n += 1;
             }
             if n > 0 { return core::task::Poll::Ready(n); } // Return success, indicating how many bytes we enqueued. However, if we didn't enqueue any bytes (meaning the ringbuffer was full), fall through to the below case.
 
             // If we get here, our ringbuffer was full so we couldn't enqueue anything. So, register the waker so that whenever there IS space to enqueue, this task gets woken up to finish its job.
             self.data.tx_waker.register(cx.waker()); // We have to register this waker before the final check (i.e., before we know if we will return core::task::Poll::Pending or not) because the ISR might drain a byte from the full buffer WHILE we are doing the check.
-            match ringbuffer.enqueue(buf[0]) {
-                Ok(()) => core::task::Poll::Ready(1),
-                Err(_) => core::task::Poll::Pending,
-            }
+            if ringbuffer.enqueue(buf[0]).is_ok() { core::task::Poll::Ready(1) }
+            else { core::task::Poll::Pending }
         })
         .await;
 
@@ -396,7 +387,7 @@ impl embedded_io_async::Write for Uart {
             let ringbuffer = unsafe { &*self.data.tx_ringbuffer.get() };
 
             // If nothing's left in the ringbuffer, then everything we buffered has been handed to the FIFO and we're flushed.
-            if ringbuffer.len() == 0 {
+            if ringbuffer.is_empty() {
                 return core::task::Poll::Ready(Ok(()));
             }
 
