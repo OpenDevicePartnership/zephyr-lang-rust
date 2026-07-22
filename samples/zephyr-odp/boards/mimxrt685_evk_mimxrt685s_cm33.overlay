@@ -61,6 +61,6 @@
     };
 };
 
-u_uart: &flexcomm0 {
+app_uart: &flexcomm0 {
 	status = "okay";
 };
