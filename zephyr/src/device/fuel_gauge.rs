@@ -131,26 +131,26 @@ impl FuelGauge {
 
     /// Reads the gauge's `manufacturer_name` into the provided buffer.
     /// According to Zephyr, manufacturer name is 1 byte of string length + 20 bytes of data (21 bytes total).
-    pub fn manufacturer_name(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
+    pub(crate) fn manufacturer_name(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
         self.get_buffer_prop(FuelGaugeBufferProp::ManufacturerName, buffer)
     }
 
     /// Reads the gauge's `device_name` into the provided buffer.
     /// According to Zephyr, device name is 1 byte of string length + 20 bytes of data (21 bytes total).
-    pub fn device_name(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
+    pub(crate) fn device_name(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
         self.get_buffer_prop(FuelGaugeBufferProp::DeviceName, buffer)
     }
 
     /// Reads the gauge's `device_chemistry` into the provided buffer.
     /// According to Zephyr, device chemistry is 1 byte of string length + 4 bytes of data (5 bytes total).
-    pub fn device_chemistry(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
+    pub(crate) fn device_chemistry(&self, buffer: &mut [u8]) -> crate::error::Result<()> {
         self.get_buffer_prop(FuelGaugeBufferProp::DeviceChemistry, buffer)
     }
 
     /// Returns the gauge's `avg_current` reading.
     /// 
     /// Zephyr notes: Provide a 1 minute average of the current on the battery. Does not check for flags or whether those values are bad readings. See driver instance header for details on implementation and how the average is calculated. Units in uA negative=discharging 
-    pub fn avg_current(&self) -> crate::error::Result<i32> {
+    pub(crate) fn avg_current(&self) -> crate::error::Result<i32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::AvgCurrent).map(|val| unsafe { *val.avg_current.as_ref() })
     }
@@ -166,7 +166,7 @@ impl FuelGauge {
     /// Returns the gauge's `current` reading.
     /// 
     /// Zephyr notes: Battery current (uA); negative=discharging. 
-    pub fn current(&self) -> crate::error::Result<i32> {
+    pub(crate) fn current(&self) -> crate::error::Result<i32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::Current).map(|val| unsafe { *val.current.as_ref() })
     }
@@ -174,7 +174,7 @@ impl FuelGauge {
     /// Returns the gauge's `cycle_count` reading.
     /// 
     /// Zephyr notes: Cycle count in 1/100ths (number of charge/discharge cycles). 
-    pub fn cycle_count(&self) -> crate::error::Result<u32> {
+    pub(crate) fn cycle_count(&self) -> crate::error::Result<u32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::CycleCount).map(|val| unsafe { *val.cycle_count.as_ref() })
     }
@@ -198,7 +198,7 @@ impl FuelGauge {
     /// Returns the gauge's `full_charge_capacity` reading.
     /// 
     /// Zephyr notes: Full Charge Capacity in uAh (might change in some implementations to determine wear).
-    pub fn full_charge_capacity(&self) -> crate::error::Result<u32> {
+    pub(crate) fn full_charge_capacity(&self) -> crate::error::Result<u32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::FullChargeCapacity).map(|val| unsafe { *val.full_charge_capacity.as_ref() })
     }
@@ -214,7 +214,7 @@ impl FuelGauge {
     /// Returns the gauge's `remaining_capacity` reading.
     /// 
     /// Zephyr notes: Remaining capacity in uAh.
-    pub fn remaining_capacity(&self) -> crate::error::Result<u32> {
+    pub(crate) fn remaining_capacity(&self) -> crate::error::Result<u32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::RemainingCapacity).map(|val| unsafe { *val.remaining_capacity.as_ref() })
     }
@@ -222,7 +222,7 @@ impl FuelGauge {
     /// Returns the gauge's `runtime_to_empty` reading.
     /// 
     /// Zephyr notes: Remaining battery life time in minutes.
-    pub fn runtime_to_empty(&self) -> crate::error::Result<u32> {
+    pub(crate) fn runtime_to_empty(&self) -> crate::error::Result<u32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::RuntimeToEmpty).map(|val| unsafe { *val.runtime_to_empty.as_ref() })
     }
@@ -246,7 +246,7 @@ impl FuelGauge {
     /// Returns the gauge's `absolute_state_of_charge` reading.
     /// 
     /// Zephyr notes: Absolute state of charge (percent, 0-100) - expressed as % of design capacity.
-    pub fn absolute_state_of_charge(&self) -> crate::error::Result<u8> {
+    pub(crate) fn absolute_state_of_charge(&self) -> crate::error::Result<u8> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::AbsoluteStateOfCharge).map(|val| unsafe { *val.absolute_state_of_charge.as_ref() })
     }
@@ -254,7 +254,7 @@ impl FuelGauge {
     /// Returns the gauge's `relative_state_of_charge` reading.
     /// 
     /// Zephyr notes: Relative state of charge (percent, 0-100) - expressed as % of full charge capacity.
-    pub fn relative_state_of_charge(&self) -> crate::error::Result<u8> {
+    pub(crate) fn relative_state_of_charge(&self) -> crate::error::Result<u8> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::RelativeStateOfCharge).map(|val| unsafe { *val.relative_state_of_charge.as_ref() })
     }
@@ -262,7 +262,7 @@ impl FuelGauge {
     /// Returns the gauge's `temperature` reading.
     /// 
     /// Zephyr notes: Temperature in 0.1 K.
-    pub fn temperature(&self) -> crate::error::Result<u16> {
+    pub(crate) fn temperature(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::Temperature).map(|val| unsafe { *val.temperature.as_ref() })
     }
@@ -270,7 +270,7 @@ impl FuelGauge {
     /// Returns the gauge's `voltage` reading.
     /// 
     /// Zephyr notes: Battery voltage (uV).
-    pub fn voltage(&self) -> crate::error::Result<i32> {
+    pub(crate) fn voltage(&self) -> crate::error::Result<i32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::Voltage).map(|val| unsafe { *val.voltage.as_ref() })
     }
@@ -278,7 +278,7 @@ impl FuelGauge {
     /// Returns the gauge's `sbs_mode` reading.
     /// 
     /// Zephyr notes: Battery Mode (flags).
-    pub fn sbs_mode(&self) -> crate::error::Result<u16> {
+    pub(crate) fn sbs_mode(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::SbsMode).map(|val| unsafe { *val.sbs_mode.as_ref() })
     }
@@ -286,7 +286,7 @@ impl FuelGauge {
     /// Sets the gauge's `sbs_mode` setting.
     /// 
     /// Zephyr notes: Battery Mode (flags).
-    pub fn set_sbs_mode(&self, value: u16) -> crate::error::Result<()> {
+    pub(crate) fn set_sbs_mode(&self, value: u16) -> crate::error::Result<()> {
         // SAFETY: All union fields are primitive types, so zeroed memory is valid.
         let mut val: crate::raw::fuel_gauge_prop_val = unsafe { core::mem::zeroed() };
         
@@ -299,7 +299,7 @@ impl FuelGauge {
     /// Returns the gauge's `chg_current` (charge current) reading.
     /// 
     /// Zephyr notes: Battery desired Max Charging Current (uA).
-    pub fn chg_current(&self) -> crate::error::Result<u32> {
+    pub(crate) fn chg_current(&self) -> crate::error::Result<u32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::ChgCurrent).map(|val| unsafe { *val.chg_current.as_ref() })
     }
@@ -307,7 +307,7 @@ impl FuelGauge {
     /// Returns the gauge's `chg_voltage` (charge voltage) reading.
     /// 
     /// Zephyr notes: Battery desired Max Charging Voltage (uV).
-    pub fn chg_voltage(&self) -> crate::error::Result<u32> {
+    pub(crate) fn chg_voltage(&self) -> crate::error::Result<u32> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::ChgVoltage).map(|val| unsafe { *val.chg_voltage.as_ref() })
     }
@@ -315,7 +315,7 @@ impl FuelGauge {
     /// Returns the gauge's `fg_status` reading.
     /// 
     /// Zephyr notes: Alarm, Status and Error codes (flags).
-    pub fn fg_status(&self) -> crate::error::Result<u16> {
+    pub(crate) fn fg_status(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::FgStatus).map(|val| unsafe { *val.fg_status.as_ref() })
     }
@@ -323,7 +323,7 @@ impl FuelGauge {
     /// Returns the gauge's `design_cap` (design capacity) reading.
     /// 
     /// Zephyr notes: Design Capacity (mAh or 10mWh).
-    pub fn design_cap(&self) -> crate::error::Result<u16> {
+    pub(crate) fn design_cap(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::DesignCap).map(|val| unsafe { *val.design_cap.as_ref() })
     }
@@ -331,7 +331,7 @@ impl FuelGauge {
     /// Returns the gauge's `design_volt` (design voltage) reading.
     /// 
     /// Zephyr notes: Design Voltage (mV).
-    pub fn design_volt(&self) -> crate::error::Result<u16> {
+    pub(crate) fn design_volt(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::DesignVolt).map(|val| unsafe { *val.design_volt.as_ref() })
     }
@@ -339,7 +339,7 @@ impl FuelGauge {
     /// Returns the gauge's `sbs_at_rate` reading.
     /// 
     /// Zephyr notes: AtRate (mA or 10 mW).
-    pub fn sbs_at_rate(&self) -> crate::error::Result<i16> {
+    pub(crate) fn sbs_at_rate(&self) -> crate::error::Result<i16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::SbsAtRate).map(|val| unsafe { *val.sbs_at_rate.as_ref() })
     }
@@ -347,7 +347,7 @@ impl FuelGauge {
     /// Sets the gauge's `at_rate` setting.
     /// 
     /// Zephyr notes: AtRate (mA or 10 mW).
-    pub fn set_sbs_at_rate(&self, value: i16) -> crate::error::Result<()> {
+    pub(crate) fn set_sbs_at_rate(&self, value: i16) -> crate::error::Result<()> {
         // SAFETY: All union fields are primitive types, so zeroed memory is valid.
         let mut val: crate::raw::fuel_gauge_prop_val = unsafe { core::mem::zeroed() };
         
@@ -360,7 +360,7 @@ impl FuelGauge {
     /// Returns the gauge's `sbs_at_rate_time_to_full` reading.
     /// 
     /// Zephyr notes: AtRateTimeToFull (minutes).
-    pub fn sbs_at_rate_time_to_full(&self) -> crate::error::Result<u16> {
+    pub(crate) fn sbs_at_rate_time_to_full(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::SbsAtRateTimeToFull).map(|val| unsafe { *val.sbs_at_rate_time_to_full.as_ref() })
     }
@@ -368,7 +368,7 @@ impl FuelGauge {
     /// Returns the gauge's `sbs_at_rate_time_to_empty` reading.
     /// 
     /// Zephyr notes: AtRateTimeToEmpty (minutes).
-    pub fn sbs_at_rate_time_to_empty(&self) -> crate::error::Result<u16> {
+    pub(crate) fn sbs_at_rate_time_to_empty(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::SbsAtRateTimeToEmpty).map(|val| unsafe { *val.sbs_at_rate_time_to_empty.as_ref() })
     }
@@ -376,7 +376,7 @@ impl FuelGauge {
     /// Returns the gauge's `sbs_at_rate_ok` reading.
     /// 
     /// Zephyr notes: AtRateOK (boolean).
-    pub fn sbs_at_rate_ok(&self) -> crate::error::Result<bool> {
+    pub(crate) fn sbs_at_rate_ok(&self) -> crate::error::Result<bool> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::SbsAtRateOk).map(|val| unsafe { *val.sbs_at_rate_ok.as_ref() })
     }
@@ -384,7 +384,7 @@ impl FuelGauge {
     /// Returns the gauge's `sbs_remaining_capacity_alarm` reading.
     /// 
     /// Zephyr notes: Remaining Capacity Alarm (mAh or 10mWh).
-    pub fn sbs_remaining_capacity_alarm(&self) -> crate::error::Result<u16> {
+    pub(crate) fn sbs_remaining_capacity_alarm(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::SbsRemainingCapacityAlarm).map(|val| unsafe { *val.sbs_remaining_capacity_alarm.as_ref() })
     }
@@ -392,7 +392,7 @@ impl FuelGauge {
     /// Sets the gauge's `sbs_remaining_capacity_alarm` setting.
     /// 
     /// Zephyr notes: Remaining Capacity Alarm (mAh or 10mWh).
-    pub fn set_sbs_remaining_capacity_alarm(&self, value: u16) -> crate::error::Result<()> {
+    pub(crate) fn set_sbs_remaining_capacity_alarm(&self, value: u16) -> crate::error::Result<()> {
         // SAFETY: All union fields are primitive types, so zeroed memory is valid.
         let mut val: crate::raw::fuel_gauge_prop_val = unsafe { core::mem::zeroed() };
         
@@ -405,7 +405,7 @@ impl FuelGauge {
     /// Returns the gauge's `sbs_remaining_time_alarm` reading.
     /// 
     /// Zephyr notes: Remaining Time Alarm (minutes).
-    pub fn sbs_remaining_time_alarm(&self) -> crate::error::Result<u16> {
+    pub(crate) fn sbs_remaining_time_alarm(&self) -> crate::error::Result<u16> {
         // SAFETY: Per the Zephyr API contract, the driver will have populated the correct field of the union.
         self.get_prop(FuelGaugeProp::SbsRemainingTimeAlarm).map(|val| unsafe { *val.sbs_remaining_time_alarm.as_ref() })
     }
@@ -413,7 +413,7 @@ impl FuelGauge {
     /// Sets the gauge's `sbs_remaining_time_alarm` setting.
     /// 
     /// Zephyr notes: Remaining Time Alarm (minutes).
-    pub fn set_sbs_remaining_time_alarm(&self, value: u16) -> crate::error::Result<()> {
+    pub(crate) fn set_sbs_remaining_time_alarm(&self, value: u16) -> crate::error::Result<()> {
         // SAFETY: All union fields are primitive types, so zeroed memory is valid.
         let mut val: crate::raw::fuel_gauge_prop_val = unsafe { core::mem::zeroed() };
         
@@ -929,119 +929,12 @@ impl embedded_batteries_async::smart_battery::ErrorType for FuelGauge {
 impl embedded_batteries_async::smart_battery::Error for crate::error::Error {
     // u_Note: eventually add better mapping to this
     fn kind(&self) -> embedded_batteries_async::smart_battery::ErrorKind {
-        embedded_batteries_async::smart_battery::ErrorKind::Other
-    }
-}
+        use embedded_batteries_async::smart_battery::ErrorKind;
 
-impl battery_service::controller::Controller for FuelGauge {
-    type ControllerError = crate::error::Error;
-
-    async fn initialize(&mut self) -> Result<(), Self::ControllerError> {
-        self.set_capacity_mode(CapacityMode::MilliAmp).await
-    }
-
-    async fn ping(&mut self) -> Result<(), Self::ControllerError> {
-        use embedded_batteries_async::smart_battery::SmartBattery;
-        SmartBattery::charging_voltage(self).await.inspect_err(|e| log::error!("Failed to ping fuel gauge: Call to self.charging_voltage() failed with e: {}", e))?;
-        log::info!("Successfully pinged fuel gauge.");
-        Ok(())
-    }
-
-    async fn get_dynamic_data(&mut self) -> Result<battery_service::device::DynamicBatteryMsgs, Self::ControllerError> {
-        use embedded_batteries_async::smart_battery::SmartBattery;
-        use embedded_batteries_async::smart_battery::CapacityModeValue;
-
-        let voltage_mv: u32 = SmartBattery::voltage(self).await?.into();
-
-        let new_msgs = battery_service::device::DynamicBatteryMsgs {
-            average_current_ma: SmartBattery::average_current(self).await?,
-            battery_status: SmartBattery::battery_status(self).await?.into_bits(),
-            max_power_mw: 0,
-            battery_temp_dk: SmartBattery::temperature(self).await?,
-            sus_power_mw: 0,
-            charging_current_ma: SmartBattery::charging_current(self).await?,
-            charging_voltage_mv: SmartBattery::charging_voltage(self).await?,
-            voltage_mv: voltage_mv as u16,
-            current_ma: SmartBattery::current(self).await?,
-            full_charge_capacity_mwh: match SmartBattery::full_charge_capacity(self).await? {
-                CapacityModeValue::CentiWattUnsigned(cwh) => (cwh as u32) * 10,
-                CapacityModeValue::MilliAmpUnsigned(mah) => (mah as u32) * voltage_mv / 1000,
-            },
-            remaining_capacity_mwh: match SmartBattery::remaining_capacity(self).await? {
-                CapacityModeValue::CentiWattUnsigned(cwh) => (cwh as u32) * 10,
-                CapacityModeValue::MilliAmpUnsigned(mah) => (mah as u32) * voltage_mv / 1000,
-            },
-            relative_soc_pct: SmartBattery::relative_state_of_charge(self).await?.into(),
-            cycle_count: SmartBattery::cycle_count(self).await?,
-            max_error_pct: SmartBattery::max_error(self).await.unwrap_or(0).into(), // u_TODO: Hardcoding to zero since the Zephyr API doesn't expose max error yet
-            bmd_status: battery_service_interface::BmdStatusFlags::default(),
-            turbo_vload_mv: 0,
-            turbo_rhf_effective_mohm: 0,
-        };
-        Ok(new_msgs)
-    }
-
-    #[allow(clippy::indexing_slicing)]
-    async fn get_static_data(&mut self) -> Result<battery_service::device::StaticBatteryMsgs, Self::ControllerError> {
-        use embedded_batteries_async::smart_battery::SmartBattery;
-        use embedded_batteries_async::smart_battery::CapacityModeValue;
-
-        let design_voltage_mv: u32 = SmartBattery::design_voltage(self).await?.into();
-        let design_capacity_mwh: u32 = match SmartBattery::design_capacity(self).await?.into() {
-            CapacityModeValue::CentiWattUnsigned(cwh) => (cwh as u32) * 10,
-            CapacityModeValue::MilliAmpUnsigned(mah) => (mah as u32) * design_voltage_mv / 1000,
-        };
-
-        let mut new_msgs = battery_service::device::StaticBatteryMsgs {
-            manufacturer_name: Default::default(),
-            device_name: Default::default(),
-            device_chemistry: Default::default(),
-            design_voltage_mv: design_voltage_mv as u16,
-            design_capacity_mwh: design_capacity_mwh,
-            device_chemistry_id: Default::default(),
-            serial_num: Default::default(),
-            battery_mode: SmartBattery::battery_mode(self).await?,
-            design_cap_warning: design_capacity_mwh / 4,
-            design_cap_low: design_capacity_mwh / 10,
-            measurement_accuracy: SmartBattery::max_error(self).await.unwrap_or(0).into(), // u_TODO: Hardcoding to zero since the Zephyr API doesn't expose max error yet
-            max_sample_time: Default::default(),
-            min_sample_time: Default::default(),
-            max_averaging_interval: Default::default(),
-            min_averaging_interval: Default::default(),
-            cap_granularity_1: Default::default(),
-            cap_granularity_2: Default::default(),
-            power_threshold_support: battery_service_interface::PowerThresholdSupport::empty(),
-            max_instant_pwr_threshold: Default::default(),
-            max_sus_pwr_threshold: Default::default(),
-            bmc_flags: battery_service_interface::BmcControlFlags::empty(),
-            bmd_capability: battery_service_interface::BmdCapabilityFlags::empty(),
-            bmd_recalibrate_count: Default::default(),
-            bmd_quick_recalibrate_time: Default::default(),
-            bmd_slow_recalibrate_time: Default::default(),
-        };
-        let mut buf = [0u8; 21];
-
-        let buf_len = new_msgs.manufacturer_name.len();
-        SmartBattery::manufacturer_name(self, &mut buf[..buf_len]).await?;
-        new_msgs.manufacturer_name.copy_from_slice(&buf[..buf_len]);
-
-        let buf_len = new_msgs.device_name.len();
-        SmartBattery::device_name(self, &mut buf[..buf_len]).await?;
-        new_msgs.device_name.copy_from_slice(&buf[..buf_len]);
-
-        let buf_len = new_msgs.device_chemistry.len();
-        SmartBattery::device_chemistry(self, &mut buf[..buf_len]).await?;
-        new_msgs.device_chemistry.copy_from_slice(&buf[..buf_len]);
-
-        Ok(new_msgs)
-    }
-
-    async fn get_device_event(&mut self) -> battery_service::controller::ControllerEvent {
-        // TODO: Loop forever till we figure out what we want to do here
-        loop {
-            embassy_time::Timer::after_secs(1000000).await;
+        let code: u32 = self.0;
+        match code {
+            crate::raw::EIO | crate::raw::ETIMEDOUT | crate::raw::ENXIO => ErrorKind::CommError,
+            _ => ErrorKind::Other,
         }
     }
-
-    fn set_timeout(&mut self, _duration: embassy_time::Duration) {}
 }

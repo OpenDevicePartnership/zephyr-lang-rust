@@ -156,20 +156,38 @@
       raw: !Myself
       device: crate::device::tachometer::Tachometer
 
-# Matcher for `Uart` from uart.rs.
-- name: uart
-  cfg: CONFIG_SERIAL
+# Matcher for `Uart` from uart_async.rs.
+# This matcher is specifically for the Async UART API (not the polling or interrupt-driven APIs).
+- name: uart-async
+  cfg: CONFIG_UART_ASYNC_API
   rules:
     - !Compatible
       names:
         - "nxp,lpc-usart" # u_Note: Should probably pull in more eventually but this is what i have
         - "zephyr,uart-emul"
+        - "zephyr,native-pty-uart"
       level: 0
   actions:
     - !Instance
       raw: !Myself
-      device: crate::device::uart::Uart
-      static_type: crate::device::uart::UartStatic
+      device: crate::device::uart_async::Uart
+      static_type: crate::device::uart_async::UartStatic
+
+# Matcher for `Uart` from uart_interrupt.rs.
+# This matcher is specifically for the Interrupt-driven UART API (not the polling or async APIs).
+- name: uart-interrupt
+  cfg: CONFIG_UART_INTERRUPT_DRIVEN
+  rules:
+    - !Compatible
+      names:
+        - "nxp,lpc-usart"
+        - "zephyr,native-pty-uart"
+      level: 0
+  actions:
+    - !Instance
+      raw: !Myself
+      device: crate::device::uart_interrupt::Uart
+      static_type: crate::device::uart_interrupt::UartStatic
 
 # Matcher for `RtcRaw` from rts.rs
 - name: rtc-raw

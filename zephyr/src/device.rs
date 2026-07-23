@@ -23,8 +23,10 @@ pub mod tachometer;
 pub mod pwm;
 #[cfg(CONFIG_PWM)]
 pub mod pwm_fan;
-#[cfg(CONFIG_SERIAL)]
-pub mod uart;
+#[cfg(CONFIG_UART_ASYNC_API)]
+pub mod uart_async;
+#[cfg(CONFIG_UART_INTERRUPT_DRIVEN)]
+pub mod uart_interrupt;
 #[cfg(CONFIG_RTC)]
 pub mod rtc;
 #[cfg(CONFIG_FUEL_GAUGE)]

@@ -1,4 +1,4 @@
-//! Rust wrapper for Zephyr UART driver.
+//! Rust wrapper for Zephyr UART driver, using Zephyr's async UART API.
 
 // # u_Note: This driver uses Zephyr's async UART API, which requires DMA as far as I'm aware. Eventually, we'll probably want to add wrappers for the other non-async Zephyr UART drivers as well. It would probably be best to rename this to uart_async.rs or something similar, and create totally separate drivers for the other APIs.
 
@@ -284,7 +284,7 @@ unsafe extern "C" fn uart_callback(_device: *const crate::raw::device, event: *m
     }
 }
 
-/// A UART peripheral.
+/// A UART peripheral, using Zephyr's async UART API.
 /// (This is a wrapper around the `struct device` in Zephyr that represents a UART controller. This driver utilizes Zephyr's async UART API.)
 /// 
 /// # Using This Struct From The Devicetree:
@@ -293,17 +293,24 @@ unsafe extern "C" fn uart_callback(_device: *const crate::raw::device, event: *m
 /// an on-chip peripheral that is already declared in the board's `.dts` file with the
 /// vendor-specific compatible (`nxp,lpc-usart`, `nordic,nrf-uarte`, `raspberrypi,pico-uart`,
 /// etc.). So, you normally don't add a new devicetree node yourself to use this driver. You 
-/// should just be able to reference the one your board already provides by its label (e.g. `uart0`, `flexcomm0`, `usart1`).
+/// should just be able to reference the one your board already provides by its label (e.g. `uart0`, `flexcomm0`, `usart1`). If
+/// you have multiple targets in your project, you might want to define a geneirc `app_uart` (or similar) label across all of your devicetree
+/// files so you don't have to change you Rust code between targets.
 /// 
-/// For example, if my chip had a UART peripheral called `uart0` in the devicetree, I'd retrieve an instance of it like:
+/// For example, if my chip had a UART peripheral called `app_uart` in the devicetree, I'd retrieve an instance of it like:
 /// ```rust
-/// let mut uart: zephyr::device::uart::Uart = zephyr::devicetree::labels::uart0::get_instance().unwrap();
+/// let mut uart = zephyr::devicetree::labels::app_uart::get_instance().unwrap();
 /// ```
 /// 
 /// You'll also want to enable serial and the Zephyr UART async API in your prj.conf:
 /// ```kconfig
 /// CONFIG_SERIAL=y
 /// CONFIG_UART_ASYNC_API=y
+/// ```
+/// 
+/// To prevent collisions with other UART APIs, it may also be a good idea to explicitly disable the interrupt-driven API:
+/// ```kconfig
+/// CONFIG_UART_INTERRUPT_DRIVEN=n
 /// ```
 /// 
 /// If needed, you can also disable Zephyr's UART logging if those messages would collide with your traffic:

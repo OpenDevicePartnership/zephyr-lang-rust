@@ -14,7 +14,7 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
     let sensor_service = crate::utils::spawn_service!(spawner, SensorService, |resources| thermal_service::sensor::Service::new(
         resources,
         thermal_service::sensor::InitParams {
-            driver: temperature_sensor::Sensor::new(), // The temp sensor driver configured via the devicetree
+            driver: temperature_sensor::Sensor::new(),
             event_senders: &mut [],    // List of event senders
 
             // Thermal service sensor config
@@ -70,7 +70,7 @@ mod temperature_sensor {
     pub struct Sensor(zephyr::device::temperature_sensor::TemperatureSensor);
     impl Sensor {
         pub fn new() -> Self {
-            Self(zephyr::devicetree::labels::temperature_sensor_0::get_instance().expect("Failed to call zephyr::devicetree::labels::temperature_sensor_0::get_instance()"))
+            Self(zephyr::devicetree::labels::u_temperature_sensor::get_instance().expect("Failed to call zephyr::devicetree::labels::u_temperature_sensor::get_instance()"))
         }
     }
     impl thermal_service_interface::sensor::Driver for Sensor {} // Marker trait so Sensor can be used with thermal_service.
