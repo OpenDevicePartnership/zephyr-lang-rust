@@ -1,0 +1,77 @@
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/i2c/i2c.h>
+
+/ {
+	/* Emulated I2C bus hosting the temperature sensor and fuel gauge. */
+	fake_i2c_bus: i2c@100 {
+		status = "okay";
+		compatible = "zephyr,i2c-emul-controller";
+		clock-frequency = <I2C_BITRATE_STANDARD>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg = <0x100 4>;
+
+		temperature_sensor_0: f75303@4c {
+			compatible = "fintek,f75303";
+			reg = <0x4c>;
+		};
+
+		fuel_gauge: sbs-gauge@b {
+			compatible = "sbs,sbs-gauge-new-api";
+			reg = <0x0b>;
+			status = "okay";
+		};
+	};
+
+	/* Emulated GPIO controller used for the tachometer input pin. */
+	gpio_emul0: gpio-emul {
+		status = "okay";
+		compatible = "zephyr,gpio-emul";
+		rising-edge;
+		falling-edge;
+		high-level;
+		low-level;
+		gpio-controller;
+		#gpio-cells = <2>;
+		ngpios = <32>;
+	};
+	tachometer: tachometer {
+		compatible = "zephyr,tach-gpio";
+		gpios = <&gpio_emul0 15 (GPIO_ACTIVE_HIGH | GPIO_PULL_UP)>;
+		pulses-per-round = <2>;
+	};
+
+	/* Emulated PWM driver used by PWM Fan */
+	pwm_emul0: pwm-emul {
+		status = "okay";
+		compatible = "zephyr,pwm-emul";
+		#pwm-cells = <3>;
+		frequency = <1000000>;
+	};
+	fan0: my-fan {
+		compatible = "pwm-fan";
+		pwms = <&pwm_emul0 7 40000 0>;
+		max-rpm = <5000>;
+		min-rpm = <0>;
+		min-start-rpm = <3000>;
+	};
+
+	/* Emulated RTC */
+	rtc_emul: rtc_emul {
+		compatible = "zephyr,rtc-emul";
+		status = "okay";
+	};
+	rs_rtc0: rs-rtc {
+		compatible = "rs,rtc";
+		rtc = <&rtc_emul>;
+		resolution-hz = <1>;
+	};
+
+    /* Emulated UART */
+	flexcomm0: uart-emul0 {
+		status = "okay";
+		compatible = "zephyr,uart-emul";
+		current-speed = <115200>;
+		loopback;
+	};
+};
