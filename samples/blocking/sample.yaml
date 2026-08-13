@@ -1,0 +1,21 @@
+sample:
+  description: Offloading blocking Zephyr calls onto a worker thread pool
+  name: blocking offload pool
+common:
+  harness: console
+  harness_config:
+    type: multi_line
+    ordered: false
+    regex:
+      - "fast finished a 200 ms blocking call"
+      - "slow finished a 700 ms blocking call"
+  tags: rust
+  filter: CONFIG_RUST_SUPPORTED
+  platform_allow:
+    - native_sim/native/64
+    - qemu_cortex_m3
+    - qemu_riscv32
+    - qemu_riscv64
+tests:
+  sample.rust.blocking:
+    tags: introduction

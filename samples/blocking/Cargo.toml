@@ -1,0 +1,24 @@
+# Copyright (c) 2026 Open Device Partnership and Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+# This must be rustapp for now.
+name = "rustapp"
+version = "0.1.0"
+edition = "2021"
+description = "Offloading blocking Zephyr calls onto a worker thread pool"
+license = "Apache-2.0 or MIT"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+zephyr = { version = "0.1.0", features = ["executor-zephyr", "async-drivers"] }
+static_cell = "2.1"
+embassy-executor = { version = "0.7.0", features = ["task-arena-size-2048"] }
+
+[build-dependencies]
+zephyr-build = "0.1.0"
+
+[profile.dev]
+opt-level = 1

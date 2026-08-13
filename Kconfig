@@ -31,6 +31,73 @@ config RUST_ALLOC
 	  Zephyr allocator (malloc/free).  This this enabled, Rust
 	  applications can use the `alloc` crate.
 
+config RUST_BLOCKING_POOL
+	bool "Worker pool for offloading blocking calls"
+	help
+	  Enable a pool of worker threads that run blocking operations off the
+	  async executor thread, so a task can await any blocking call, such
+	  as a synchronous Zephyr API, instead of stalling the executor.  The
+	  pool and its worker threads are allocated and started automatically;
+	  application code only needs to enable this option.
+
+	  See the `zephyr::blocking` module.  The pool is a set of worker
+	  threads draining a shared FIFO queue, specialized for blocking work.
+
+if RUST_BLOCKING_POOL
+
+config RUST_BLOCKING_POOL_THREADS
+	int "Number of blocking-pool worker threads"
+	default 1
+	range 1 32
+	help
+	  Number of worker threads draining the shared blocking-work queue.
+	  A value greater than 1 lets independent operations run in parallel;
+	  operations that contend for the same resource still serialize on
+	  that resource's own lock.
+
+config RUST_BLOCKING_POOL_STACK_SIZE
+	int "Blocking-pool worker thread stack size (bytes)"
+	default 2048
+	help
+	  Stack size, in bytes, for each blocking-pool worker thread.  Must be
+	  large enough for the deepest blocking call path used, plus the
+	  largest operation closure and result submitted to the pool.
+
+config RUST_BLOCKING_POOL_PRIORITY
+	int "Priority of the blocking-pool worker threads"
+	default 5
+	help
+	  Fixed Zephyr scheduling priority of the blocking-pool worker threads.
+	  Blocking work runs at this priority.
+
+config RUST_BLOCKING_POOL_SLOTS
+	int "Number of blocking-pool submission slots"
+	default 4
+	range 1 64
+	help
+	  Maximum number of blocking operations that may be in flight at once,
+	  across the whole application.  A slot holds only fixed-size
+	  bookkeeping, so slot count is independent of operation size.
+
+	  When all slots are in use, further submissions wait asynchronously
+	  for one to free up rather than failing.
+
+config RUST_BLOCKING_POOL_WAITERS
+	int "Number of blocking-pool waiter registrations"
+	default 8
+	range 1 64
+	help
+	  Maximum number of tasks that may be waiting for a submission slot at
+	  once.  Set this to the number of tasks that may concurrently call
+	  `zephyr::blocking::run`.
+
+	  This is independent of RUST_BLOCKING_POOL_SLOTS: slots bound how many
+	  operations run at once, while this bounds how many tasks may queue
+	  behind them.  Exceeding it still works, but every further registration wakes
+	  all the tasks already waiting, wasting CPU while the pool is saturated.
+
+endif # RUST_BLOCKING_POOL
+
 endif # RUST
 
 endmenu

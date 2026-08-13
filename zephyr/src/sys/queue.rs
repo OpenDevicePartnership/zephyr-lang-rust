@@ -7,7 +7,7 @@
 use core::ffi::c_void;
 use core::fmt;
 
-use zephyr_sys::{k_queue, k_queue_append, k_queue_get, k_queue_init};
+use zephyr_sys::{k_queue, k_queue_append, k_queue_get, k_queue_init, k_queue_remove};
 
 use crate::object::{ObjectInit, ZephyrObject};
 use crate::time::Timeout;
@@ -72,6 +72,19 @@ impl Queue {
     {
         let timeout: Timeout = timeout.into();
         k_queue_get(self.0.get(), timeout.0)
+    }
+
+    /// Remove a specific element from the queue, if it is still present.
+    ///
+    /// Returns `true` if `data` was found in the queue and removed, `false` otherwise (for
+    /// example, it was never queued, or has already been received by another thread).
+    ///
+    /// # Safety
+    ///
+    /// `data` must be a pointer previously passed to [`send`](Self::send) on this queue (or null).
+    /// If it is removed, ownership returns to the caller, exactly as with [`recv`](Self::recv).
+    pub unsafe fn remove(&self, data: *mut c_void) -> bool {
+        k_queue_remove(self.0.get(), data)
     }
 }
 
