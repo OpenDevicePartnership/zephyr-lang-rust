@@ -58,6 +58,9 @@ async fn init(spawner: Spawner) {
     let time_alarm = crate::time_alarm::init(spawner).await;
     let battery = crate::battery::init(spawner).await;
 
+    let sensor = thermal_service_interface::ThermalService::sensor(&thermal, 0).expect("No sensor 0 registered with the thermal service");
+    spawner.spawn(temperature_print(sensor)).expect("Failed to spawn temperature_print()");
+
     // Create relay handler for the above services
     let relay = RelayHandler::new(
         thermal_service_relay::ThermalServiceRelayHandler::new(thermal),
@@ -67,6 +70,18 @@ async fn init(spawner: Spawner) {
     
     // Spawn all the different tasks.
     spawner.spawn(uart_service(relay)).expect("Failed to spawn uart_service()");
+}
+
+// Prints the thermal service's latest temperature reading once a second. Note that this is
+// whatever the sensor service last sampled, so it updates at the sensor's sample period.
+#[embassy_executor::task]
+async fn temperature_print(sensor: <crate::thermal::ThermalService as thermal_service_interface::ThermalService>::Sensor) {
+    use thermal_service_interface::sensor::SensorService;
+
+    loop {
+        info!("Temperature: {} C", sensor.temperature().await);
+        embassy_time::Timer::after_secs(5).await;
+    }
 }
 
 // UART service. Spawns out the thermal, battery, and timer services.

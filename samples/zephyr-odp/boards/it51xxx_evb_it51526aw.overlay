@@ -1,0 +1,75 @@
+/*
+ * Copyright (c) 2026
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * Devicetree overlay for the zephyr-odp sample on it51xxx_evb/it51526aw.
+ *
+ * Real hardware: TMP117 on i2c0, fan on pwm7 (GPA7), tachometer on tach0 (GPD6),
+ * RTC on rtc0, MCTP transport on uart1 (GPC7/GPE6).  The console moves to uart2
+ * (GPH1/GPH2) so it does not collide with the MCTP transport.
+ * Emulated: the fuel gauge, which has no hardware on this part.
+ */
+
+&i2c0 {
+	u_temperature_sensor: tmp117@48 {
+		compatible = "ti,tmp11x";
+		reg = <0x48>;
+	};
+};
+
+/ {
+	chosen {
+		zephyr,console = &uart2;
+		zephyr,shell-uart = &uart2;
+	};
+
+	fuel_gauge: fuel-gauge-emul {
+		compatible = "zephyr,fuel-gauge-emul";
+		status = "okay";
+	};
+
+	fan0: my-fan {
+		compatible = "pwm-fan";
+		/* Period is in CYCLES, not ns: the Rust wrapper calls pwm_set_cycles().
+		 * 9.2 MHz / 368 = 25 kHz, the standard 4-wire fan PWM frequency.
+		 */
+		pwms = <&pwm7 0 368 0>;
+		tachometer = <&tach0>;
+		max-rpm = <5000>;
+		min-rpm = <0>;
+		min-start-rpm = <1500>;
+	};
+
+	/* The Rust wrapper node. The node name must stay "rs-rtc". */
+	rs_rtc0: rs-rtc {
+		compatible = "rs,rtc";
+		rtc = <&rtc0>;
+		resolution-hz = <1>;
+	};
+};
+
+&pwm7 {
+	status = "okay";
+};
+
+&tach0 {
+	status = "okay";
+};
+
+&rtc0 {
+	status = "okay";
+};
+
+&uart2 {
+	status = "okay";
+	current-speed = <115200>;
+	clock-frequency = <1843200>;
+	pinctrl-0 = <&uart2_rx_gph1_default
+		     &uart2_tx_gph2_default>;
+	pinctrl-names = "default";
+};
+
+/* uart1 is already enabled by the board dts; this only attaches the label. */
+app_uart: &uart1 {
+	status = "okay";
+};

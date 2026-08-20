@@ -75,8 +75,31 @@ fn to_datetime(rtc_time: &crate::raw::rtc_time) -> Result<embedded_mcu_hal::time
     })
 }
 
+fn is_leap_year(year: u16) -> bool {
+    (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+}
+
+// Day of the week (0 = Sunday) of a Gregorian date, via Sakamoto's algorithm.
+fn day_of_week(year: u16, month: u8, day: u8) -> i32 {
+    const MONTH_OFFSET: [i32; 12] = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
+
+    let year = if month < 3 { year as i32 - 1 } else { year as i32 };
+    (year + year / 4 - year / 100 + year / 400 + MONTH_OFFSET[month as usize - 1] + day as i32) % 7
+}
+
+// Day of the year (0 = January 1st).
+fn day_of_year(year: u16, month: u8, day: u8) -> i32 {
+    const DAYS_BEFORE_MONTH: [i32; 12] = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+
+    let leap_day = i32::from(month > 2 && is_leap_year(year));
+    DAYS_BEFORE_MONTH[month as usize - 1] + day as i32 - 1 + leap_day
+}
+
 // Helper to convert embedded_mcu_hal::time::Datetime to zephyr::raw::rtc_time
 fn to_rtctime(datetime: &embedded_mcu_hal::time::Datetime) -> crate::raw::rtc_time {
+    // month is 1-12 here; rtc_time wants 0-11.
+    let month = u8::from(datetime.month());
+
     // We don't have to handle any potential errors here, since `Datetime` is already the validated form.
     // Basically, it's impossible for any of these casts to fail.
     crate::raw::rtc_time {
@@ -87,14 +110,17 @@ fn to_rtctime(datetime: &embedded_mcu_hal::time::Datetime) -> crate::raw::rtc_ti
         tm_nsec: datetime.nanoseconds() as i32,
 
         // tm_mon is kind of annoying, since we first have to convert it from `Month` to u8, and then to i32
-        tm_mon: (u8::from(datetime.month()) - 1) as i32,
+        tm_mon: (month - 1) as i32,
 
         // For year, we have to subtract 1900 since rtc_time represents tm_year as `Year - 1900` (and Datetime represents them normally)
         tm_year: datetime.year() as i32 - 1900,
 
-        // The rest of these don't exist in `Datetime`, so we set them to -1 (which means "Unknown" in the context of the `rtc_time` struct)
-        tm_wday: -1,
-        tm_yday: -1,
+        // `Datetime` doesn't carry these, but they're derivable from the date, and drivers such as
+        // rtc_ite_it8xxx2 reject the "Unknown" (-1) encoding outright.
+        tm_wday: day_of_week(datetime.year(), month, datetime.day()),
+        tm_yday: day_of_year(datetime.year(), month, datetime.day()),
+
+        // Daylight saving is genuinely unknown to us, and -1 is the documented encoding for that.
         tm_isdst: -1,
     }
 }
@@ -119,9 +145,14 @@ impl Rtc {
         if !unique.once() { return None; }
         let mut rtc = Rtc { device, resolution_hz };
 
-        // Default Rtc time to January 1st, 1970.
+        // Default Rtc time to January 1st, 2000. Not the Unix epoch that `Datetime::default()`
+        // gives, because plenty of RTC hardware only spans 2000-2099 (e.g. the ITE IT8xxx2/IT51xxx).
         use embedded_mcu_hal::time::DatetimeClock;
-        rtc.set(embedded_mcu_hal::time::Datetime::default()).ok()?;
+        let default_time = embedded_mcu_hal::time::Datetime::new(embedded_mcu_hal::time::DatetimeFields {
+            year: 2000,
+            ..Default::default()
+        }).ok()?;
+        rtc.set(default_time).ok()?;
 
         Some(rtc)
     }

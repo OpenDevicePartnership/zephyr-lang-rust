@@ -18,7 +18,7 @@ crate-type = ["staticlib"]
 embassy-executor = { version = "0.7.0", features = ["task-arena-size-4096"] }
 embassy-futures = "0.1.1"
 embassy-sync = "0.8"
-embassy-time = { version = "0.5", features = ["tick-hz-10_000"] } # u_Note: tick-hz-10_000 is needed to match with zephyr. If this isn't here, something like Timer::after_secs(1) would actually wait for 100 seconds instead of 1 seconds. There should probably be some kind of way to do this manually so the embassy APIs work no matter what the Zephyr tick rate is.
+embassy-time = { version = "0.5", features = ["tick-hz-4_096"] } # u_Note: tick-hz must match CONFIG_SYS_CLOCK_TICKS_PER_SEC in prj.conf. If this isn't here, something like Timer::after_secs(1) would actually wait for a different amount of time. 4096 divides the it51xxx 32768 Hz timer exactly; there should probably be some kind of way to do this manually so the embassy APIs work no matter what the Zephyr tick rate is.
 embedded-sensors-hal-async = "0.3.0"
 embedded-services = { git = "https://github.com/OpenDevicePartnership/embedded-services", rev = "918fdad60a25357d9ab8e693916e40bef31d486d" }
 odp-service-common = { git = "https://github.com/OpenDevicePartnership/embedded-services", rev = "918fdad60a25357d9ab8e693916e40bef31d486d" }
