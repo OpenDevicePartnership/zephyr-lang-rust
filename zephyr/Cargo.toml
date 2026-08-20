@@ -36,7 +36,8 @@ embassy-time = "0.5"  # u_Note: Must match battery-service's version since Durat
 
 # Imports for uart.rs:
 embedded-io-async = {version = "0.7.0"}
-heapless = "0.8"
+# `spsc` is gated on the target having native atomics, which rv32i/imc and thumbv6m lack.
+heapless = { version = "0.8", features = ["portable-atomic-critical-section"] }
 
 # Imports for rtc.rs
 embedded-mcu-hal = {version = "0.3.0"}

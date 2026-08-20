@@ -39,9 +39,9 @@ pub async fn init(spawner: embassy_executor::Spawner) -> ThermalService {
                 event_senders: &mut [],
                 config: thermal_service::fan::Config {
                     auto_control: true,
-                    min_temp: 21.0,
-                    ramp_temp: 22.0,
-                    max_temp: 25.0,
+                    min_temp: 25.0,
+                    ramp_temp: 27.0,
+                    max_temp: 30.0,
                     ..Default::default()
                 },
             },

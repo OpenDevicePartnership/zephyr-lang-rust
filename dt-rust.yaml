@@ -181,6 +181,7 @@
     - !Compatible
       names:
         - "nxp,lpc-usart"
+        - "ns16550"
         - "zephyr,native-pty-uart"
       level: 0
   actions:
@@ -196,6 +197,7 @@
     - !Compatible
       names:
         - "zephyr,rtc-emul"
+        - "ite,it8xxx2-rtc"
       level: 0
   actions:
     - !Instance

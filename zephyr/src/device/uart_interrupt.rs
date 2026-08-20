@@ -7,6 +7,9 @@ use core::cell::UnsafeCell;
 // u_Note: This whole area is modelled after what's currently in gpio.rs.
 const RX_RINGBUFFER_SIZE: usize = 256;
 const TX_RINGBUFFER_SIZE: usize = 256;
+/// Staging buffer size for one `uart_fifo_fill()` call; covers the deepest FIFO we expect to
+/// meet in one go (ns16750's 64), larger FIFOs just take an extra interrupt.
+const TX_CHUNK_SIZE: usize = 64;
 const UART_RX_TIMEOUT: i32 = 1000;
 pub(crate) struct UartStatic {
     // RX Stuff
@@ -161,20 +164,27 @@ unsafe extern "C" fn uart_callback(
             }
         }
 
-        /// Helper to write a single character into the TX FIFO. Returns `true` if the byte was written, and `false` if it wasn't.
+        /// Helper to write bytes into the TX FIFO. Returns how many of them the driver accepted.
         ///
-        /// Note: `bool` is basically just an error code here, but I wanted to separate the "did it accept our character" indicator from the
-        /// actual Zephyr errors that cause the whole callback to return via `?`. This is probably not the most idiomatic
-        /// but since this function's still in FFI land who cares
-        fn fifo_fill(device: *const crate::raw::device, character: u8) -> Result<bool, ()> {
+        /// Must be called at most ONCE per TX-ready event. `uart_fifo_fill()` is not obliged to
+        /// flow-control itself -- ns16550 blindly writes `min(size, fifo_size)` bytes to THR
+        /// without ever consulting LSR -- so calling it per byte in a loop silently overruns the
+        /// hardware FIFO and corrupts bytes still queued for transmission.
+        fn fifo_fill(device: *const crate::raw::device, bytes: &[u8]) -> Result<usize, ()> {
             match to_result(
-                // SAFETY: `device` is a valid UART device pointer for the duration of this call.
-                unsafe { crate::raw::uart_fifo_fill(device, &character, 1) },
+                // SAFETY: `device` is a valid UART device pointer, and `bytes` is valid for
+                // `bytes.len()` reads, for the duration of this call.
+                unsafe {
+                    crate::raw::uart_fifo_fill(
+                        device,
+                        bytes.as_ptr(),
+                        bytes.len() as core::ffi::c_int,
+                    )
+                },
             ) {
-                Ok(1) => Ok(true),
-                Ok(0) => Ok(false),
-                Ok(_) => {
-                    log::error!("uart_fifo_fill() somehow wrote in more bytes than we requested. That should not be possible.");
+                Ok(n) if n as usize <= bytes.len() => Ok(n as usize),
+                Ok(n) => {
+                    log::error!("uart_fifo_fill() reported {} bytes written but was only offered {}. That should not be possible, and may mean it read past the end of our buffer.", n, bytes.len());
                     Err(())
                 }
                 Err(Error(crate::raw::ENOSYS)) => {
@@ -194,15 +204,16 @@ unsafe extern "C" fn uart_callback(
             }
         }
 
-        // Start processing interrupts in the ISR.
-        // According to Zephyr docs you need to call this as the first thing in the ISR before doing other stuff
-        // SAFETY: `device` is a valid UART device pointer for the duration of this call.
-        unsafe {
-            crate::raw::uart_irq_update(device);
-        }
-
         // Loop until there's no pending IRQs left to process
         loop {
+            // Must be re-run every iteration: drivers whose IIR auto-acks on read (ns16550 and
+            // friends) answer the is_*() queries below from a snapshot that only this call refreshes,
+            // so hoisting it out of the loop makes them report stale state forever.
+            // SAFETY: `device` is a valid UART device pointer for the duration of this call.
+            unsafe {
+                crate::raw::uart_irq_update(device);
+            }
+
             // If no IRQ is pending we can exit out of the callback
             if !is_irq_pending(device)? {
                 return Ok(());
@@ -226,27 +237,36 @@ unsafe extern "C" fn uart_callback(
 
             // Handle TX
             if is_tx_ready(device)?.is_some() {
-                // SAFETY: `state` is a valid UartState pointer for the duration of this call.
-                let ringbuffer = unsafe { &mut *state.tx_ringbuffer.get() };
-                while let Some(&byte) = ringbuffer.peek() {
-                    // Fill one byte and check if it was accepted
-                    if fifo_fill(device, byte)? {
-                        // it was accepted so we don't need that byte anymore
-                        if ringbuffer.dequeue().is_none() {
-                            // if `None` was returned, then nothing got dequeued? This shouldn't be possible due to the `break` if
-                            // nothing was returned from .peek() but print out an error just in case
-                            log::error!("ringbuffer.dequeue() failed: Returned `None`. This shouldn't be possible at this point?");
-                        }
-                    } else {
-                        // if fifo_fill() returns `false` then our byte wasn't accepted, meaning the fifo is full. So, we're going to break
-                        // and then wait for the next TX ISR to try again
-                        break;
+                // The ringbuffer isn't contiguous, so stage a run of it to hand to the driver as a
+                // single slice. Anything that doesn't fit rides the next TX interrupt.
+                let mut chunk = [0u8; TX_CHUNK_SIZE];
+                let mut chunk_len = 0usize;
+                {
+                    // SAFETY: `state` is a valid UartStatic pointer for the duration of this borrow.
+                    let ringbuffer = unsafe { &*state.tx_ringbuffer.get() };
+                    for (slot, &byte) in chunk.iter_mut().zip(ringbuffer.iter()) {
+                        *slot = byte;
+                        chunk_len += 1;
                     }
                 }
 
-                // If we get here then we've drained the loop. So, stop the TX IRQ (or it will keep firing forever)
+                if chunk_len > 0 {
+                    // One call only -- see `fifo_fill`. Drop exactly what the driver took.
+                    let sent = fifo_fill(device, &chunk[..chunk_len])?;
+                    // SAFETY: `state` is a valid UartStatic pointer for the duration of this call.
+                    let ringbuffer = unsafe { &mut *state.tx_ringbuffer.get() };
+                    for _ in 0..sent {
+                        if ringbuffer.dequeue().is_none() {
+                            log::error!("ringbuffer.dequeue() failed: Returned `None` while dropping bytes the FIFO had already accepted. This shouldn't be possible at this point?");
+                            break;
+                        }
+                    }
+                }
+
+                // Once we've drained everything, stop the TX IRQ (or it will keep firing forever)
                 // Important: we need to re-enable the TX IRQ in the write() function after we enqueue stuff to the ringbuffer
-                if ringbuffer.is_empty() {
+                // SAFETY: `state` is a valid UartStatic pointer for the duration of this borrow.
+                if unsafe { &*state.tx_ringbuffer.get() }.is_empty() {
                     // SAFETY: `device` is a valid UART device pointer for the duration of this call.
                     unsafe {
                         crate::raw::uart_irq_tx_disable(device);

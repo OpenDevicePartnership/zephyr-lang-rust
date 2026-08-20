@@ -312,11 +312,9 @@ impl RawInfo {
                             {
                                 static #unique_name: crate::device::Unique = crate::device::Unique::new();
                                 static #static_name: crate::device::NoStatic = crate::device::NoStatic::new();
-                                unsafe {
-                                    let device = #target_route :: get_instance_raw();
-                                    let device_static = #target_route :: get_static_raw();
-                                    #phandle_device_id::new(&#unique_name, &#static_name, device, device_static #(, #args)*).unwrap()
-                                }
+                                // Every splice site for this block is already inside an `unsafe`.
+                                let device = #target_route :: get_instance_raw();
+                                #phandle_device_id::new(&#unique_name, &#static_name, device #(, #args)*).unwrap()
                             }
                         }
                     }
