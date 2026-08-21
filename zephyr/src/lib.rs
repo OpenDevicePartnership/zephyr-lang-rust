@@ -68,7 +68,12 @@
 #![allow(unexpected_cfgs)]
 #![deny(missing_docs)]
 
+// Allow this crate to refer to itself by name
+extern crate self as zephyr;
+
 pub mod align;
+#[cfg(all(feature = "async-drivers", CONFIG_RUST_BLOCKING_POOL))]
+pub mod blocking;
 pub mod device;
 pub mod embassy;
 pub mod error;
